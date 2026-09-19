@@ -1,12 +1,19 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useT } from '../lib/i18n'
 import { labelUrl, uploadLabel } from '../lib/supabase'
 
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  useEffect(() => {
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => { document.body.style.overflow = previous; window.removeEventListener('keydown', closeOnEscape) }
+  }, [onClose])
   return (
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <h2>{title}</h2>
+      <div className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+        <div className="sheet-head"><h2>{title}</h2><button type="button" className="sheet-close" aria-label="Cerrar" onClick={onClose}>×</button></div>
         {children}
       </div>
     </div>

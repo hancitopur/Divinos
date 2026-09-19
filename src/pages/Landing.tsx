@@ -94,6 +94,7 @@ export function Landing() {
       </main>
 
       <footer className="landing-footer"><Brand /><span>© 2026 Divinos · Puerto Rico</span><Link to="/login">Acceso de clientes</Link></footer>
+      <div className="mobile-buybar"><span>Organiza tu cava</span><Jump className="btn" to="planes">Ver planes</Jump></div>
     </div>
   )
 }

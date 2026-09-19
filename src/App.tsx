@@ -61,7 +61,7 @@ function Shell() {
           <select value={lang} onChange={(e) => setLang(e.target.value as any)} aria-label={t('language')}>
             <option value="es">ES</option><option value="en">EN</option>
           </select>
-          <button onClick={() => supabase.auth.signOut()}>{t('signOut')}</button>
+          <button aria-label={t('signOut')} title={t('signOut')} onClick={() => supabase.auth.signOut()}>{lang === 'es' ? 'Salir' : 'Exit'}</button>
         </div>
       </header>
       <main className="main">

@@ -70,7 +70,7 @@ export function Bottles() {
           ))}
         </div>
       )}
-      <button className="fab" onClick={() => setAdding(true)}>+</button>
+      <button className="fab" aria-label={t('newBottle')} onClick={() => setAdding(true)}>+</button>
       {editing && <BottleForm bottle={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
       {adding && <AddBottles onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load() }} />}
     </div>

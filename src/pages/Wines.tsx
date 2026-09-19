@@ -47,7 +47,7 @@ export function Wines() {
           ))}
         </div>
       )}
-      <button className="fab" onClick={() => setEditing({ size_ml: 750, type: 'red' })}>+</button>
+      <button className="fab" aria-label={t('newWine')} onClick={() => setEditing({ size_ml: 750, type: 'red' })}>+</button>
       {editing && <WineForm wine={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
     </div>
   )

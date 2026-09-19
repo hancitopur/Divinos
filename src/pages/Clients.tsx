@@ -41,7 +41,7 @@ export function Clients() {
           })}
         </div>
       )}
-      <button className="fab" onClick={() => setEditing({ active: true })}>+</button>
+      <button className="fab" aria-label={t('newClient')} onClick={() => setEditing({ active: true })}>+</button>
       {editing && <ClientForm client={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
     </div>
   )
