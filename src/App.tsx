@@ -1,4 +1,4 @@
-import { HashRouter, NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { AuthProvider, useAuth } from './lib/auth'
 import { I18nProvider, useT } from './lib/i18n'
@@ -26,6 +26,7 @@ const icons = {
 function Shell() {
   const { t, lang, setLang } = useT()
   const { session, loading } = useAuth()
+  const location = useLocation()
   const [showInstall, setShowInstall] = useState(false)
 
   useEffect(() => {
@@ -36,9 +37,12 @@ function Shell() {
   }, [])
 
   if (loading) return <div className="auth"><Loading /></div>
+  if (location.pathname === '/sales') return <Landing />
+  if (location.pathname === '/demo') return <Demo />
   if (!session) return (
     <Routes>
       <Route path="/demo" element={<Demo />} />
+      <Route path="/sales" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Landing />} />
       <Route path="*" element={<Navigate to="/" replace />} />
