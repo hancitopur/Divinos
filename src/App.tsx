@@ -9,6 +9,7 @@ import { Bottles } from './pages/Bottles'
 import { Wines } from './pages/Wines'
 import { Racks } from './pages/Racks'
 import { Clients } from './pages/Clients'
+import { Demo } from './pages/Demo'
 import { Loading } from './components/ui'
 
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
@@ -33,7 +34,12 @@ function Shell() {
   }, [])
 
   if (loading) return <div className="auth"><Loading /></div>
-  if (!session) return <Login />
+  if (!session) return (
+    <Routes>
+      <Route path="/demo" element={<Demo />} />
+      <Route path="*" element={<Login />} />
+    </Routes>
+  )
 
   const tabs = [
     { to: '/', label: t('dashboard'), icon: icons.home },
