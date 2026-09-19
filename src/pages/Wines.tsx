@@ -60,6 +60,7 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
   const [imageQuery, setImageQuery] = useState([wine.producer, wine.name, wine.vintage].filter(Boolean).join(' '))
   const [imageResults, setImageResults] = useState<WineImageResult[]>([])
   const [imageBusy, setImageBusy] = useState(false)
+  const [autofilled, setAutofilled] = useState<string[]>([])
   const set = (k: keyof Wine, v: any) => setF((p) => ({ ...p, [k]: v }))
   const isNew = !wine.id
 
@@ -91,7 +92,7 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
         <div className="label-search card stack">
           <div>
             <strong>{lang === 'es' ? 'Buscar etiqueta por nombre' : 'Find label by name'}</strong>
-            <div className="muted small">{lang === 'es' ? 'Open Food Facts + Wikimedia Commons. Confirma visualmente antes de escoger.' : 'Open Food Facts + Wikimedia Commons. Verify visually before selecting.'}</div>
+            <div className="muted small">{lang === 'es' ? 'Busca, confirma la etiqueta y Divinos completará los datos disponibles.' : 'Search, confirm the label, and Divinos will fill the available details.'}</div>
           </div>
           <div className="row">
             <input className="search" value={imageQuery} onChange={(e) => setImageQuery(e.target.value)} placeholder="Marca, vino y añada" />
@@ -105,7 +106,23 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
               setImageBusy(true); setErr(null)
               try {
                 const path = await importWineImage(result)
-                setF((prev) => ({ ...prev, label_photo_path: path, label_source: result.source, label_source_url: result.sourceUrl, barcode: result.barcode || prev.barcode || null }))
+                const values: Array<[keyof Wine, unknown, string]> = [
+                  ['name', result.name, lang === 'es' ? 'nombre' : 'name'],
+                  ['producer', result.producer, lang === 'es' ? 'productor' : 'producer'],
+                  ['vintage', result.vintage, lang === 'es' ? 'añada' : 'vintage'],
+                  ['region', result.region, lang === 'es' ? 'región' : 'region'],
+                  ['country', result.country, lang === 'es' ? 'país' : 'country'],
+                  ['varietal', result.varietal, lang === 'es' ? 'varietal' : 'varietal'],
+                  ['type', result.type, lang === 'es' ? 'tipo' : 'type'],
+                  ['size_ml', result.sizeMl, lang === 'es' ? 'tamaño' : 'size'],
+                  ['barcode', result.barcode, 'UPC / EAN'],
+                ]
+                setF((prev) => {
+                  const next = { ...prev, label_photo_path: path, label_source: result.source, label_source_url: result.sourceUrl }
+                  for (const [key, value] of values) if (value !== undefined && value !== null && value !== '') (next as any)[key] = value
+                  return next
+                })
+                setAutofilled(values.filter(([, value]) => value !== undefined && value !== null && value !== '').map(([, , label]) => label))
                 setImageResults([])
               } catch (ex: any) { setErr(ex.message) } finally { setImageBusy(false) }
             }}>
@@ -113,6 +130,7 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
               <span><b>{result.title}</b><small>{result.subtitle}</small></span>
             </button>)}
           </div>}
+          {autofilled.length > 0 && <div className="autofill-note">✓ {lang === 'es' ? 'Completado automáticamente:' : 'Filled automatically:'} {autofilled.join(', ')}. {lang === 'es' ? 'Puedes corregir cualquier campo antes de guardar.' : 'You can edit any field before saving.'}</div>}
           {f.label_source && <div className="muted small">
             {f.label_source === 'camera_upload' ? (lang === 'es' ? 'Fuente: foto propia' : 'Source: own photo') : <>{lang === 'es' ? 'Fuente: ' : 'Source: '}<a className="source-link" href={f.label_source_url || '#'} target="_blank" rel="noreferrer">{f.label_source === 'open_food_facts' ? 'Open Food Facts' : 'Wikimedia Commons'}</a></>}
           </div>}
