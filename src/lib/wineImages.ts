@@ -13,7 +13,10 @@ export interface WineImageResult {
   barcode?: string
 }
 
-const OFF = 'https://world.openfoodfacts.org/cgi/search.pl'
+const OFF_ENDPOINTS = [
+  'https://world.openfoodfacts.org/cgi/search.pl',
+  'https://world.openfoodfacts.net/cgi/search.pl',
+]
 const COMMONS = 'https://commons.wikimedia.org/w/api.php'
 
 export async function searchWineImages(query: string): Promise<WineImageResult[]> {
@@ -41,8 +44,16 @@ async function searchOpenFoodFacts(query: string): Promise<WineImageResult[]> {
     page_size: '8',
     fields: 'code,product_name,brands,image_front_url,image_front_small_url,countries',
   })
-  const response = await fetch(`${OFF}?${params}`)
-  if (!response.ok) throw new Error(`Open Food Facts ${response.status}`)
+  let response: Response | null = null
+  for (const endpoint of OFF_ENDPOINTS) {
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 8000)
+    try {
+      const attempt = await fetch(`${endpoint}?${params}`, { signal: controller.signal })
+      if (attempt.ok) { response = attempt; break }
+    } catch { /* try the official mirror */ } finally { window.clearTimeout(timeout) }
+  }
+  if (!response) throw new Error('Open Food Facts no está disponible')
   const data = await response.json() as { products?: any[] }
   return (data.products ?? [])
     .filter((p) => p.image_front_url || p.image_front_small_url)
@@ -83,7 +94,7 @@ async function searchCommons(query: string): Promise<WineImageResult[]> {
 
 export async function importWineImage(result: WineImageResult): Promise<string> {
   const url = new URL(result.downloadUrl)
-  const allowed = ['images.openfoodfacts.org', 'upload.wikimedia.org', 'thumb.wikimedia.org']
+  const allowed = ['images.openfoodfacts.org', 'images.openfoodfacts.net', 'upload.wikimedia.org', 'thumb.wikimedia.org']
   if (url.protocol !== 'https:' || !allowed.includes(url.hostname)) throw new Error('Fuente de imagen no permitida')
 
   const response = await fetch(url.toString())
