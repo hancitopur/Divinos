@@ -13,6 +13,29 @@ const activity = [
   ['Vega Sicilia Único 2014', 'Rack A · S5 · P11', 'Entregada'],
 ]
 
+const inventory = [
+  { name: 'Château Margaux', vintage: '2018', origin: 'Margaux, Francia', price: '$1,195', location: 'A · S3 · P08', tone: 'ivory' },
+  { name: 'Opus One', vintage: '2019', origin: 'Napa Valley, USA', price: '$425', location: 'B · S1 · P04', tone: 'night' },
+  { name: 'Vega Sicilia Único', vintage: '2014', origin: 'Ribera del Duero, España', price: '$495', location: 'A · S5 · P11', tone: 'cream' },
+  { name: 'Sassicaia', vintage: '2020', origin: 'Toscana, Italia', price: '$319', location: 'C · S2 · P06', tone: 'blue' },
+  { name: 'Dom Pérignon', vintage: '2013', origin: 'Champagne, Francia', price: '$289', location: 'D · S1 · P02', tone: 'shield' },
+  { name: 'Almaviva', vintage: '2020', origin: 'Maipo, Chile', price: '$175', location: 'B · S4 · P09', tone: 'gold' },
+]
+
+function LabelArtwork({ wine, compact = false }: { wine: typeof inventory[number]; compact?: boolean }) {
+  return (
+    <div className={`label-art label-art-${wine.tone} ${compact ? 'compact' : ''}`} role="img" aria-label={`Etiqueta ilustrada de ${wine.name} ${wine.vintage}`}>
+      <span className="label-neck" />
+      <div className="label-paper">
+        <small>DIVINOS SELECTION</small>
+        <strong>{wine.name}</strong>
+        <i>{wine.vintage}</i>
+        <em>{wine.origin.split(',')[0]}</em>
+      </div>
+    </div>
+  )
+}
+
 export function Demo() {
   return (
     <div className="demo-shell">
@@ -45,6 +68,55 @@ export function Demo() {
           <div className="stat"><div className="label">Clientes activos</div><div className="value">12</div><div className="sub">colecciones</div></div>
         </section>
 
+        <section className="demo-inventory-section">
+          <div className="demo-section-head">
+            <div><span className="demo-kicker">Inventario visual</span><h2>Cada botella se reconoce por su etiqueta</h2></div>
+            <span className="demo-count">6 de 188</span>
+          </div>
+          <div className="demo-wine-grid">
+            {inventory.map((wine) => (
+              <article className="demo-wine" key={`${wine.name}-${wine.vintage}`}>
+                <LabelArtwork wine={wine} />
+                <div className="demo-wine-info">
+                  <small>{wine.origin}</small>
+                  <h3>{wine.name} <span>{wine.vintage}</span></h3>
+                  <div><b>{wine.price}</b><em>{wine.location}</em></div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="demo-intake">
+          <div className="demo-intake-copy">
+            <span className="demo-eyebrow">Entrada del cliente</span>
+            <h2>Tan fácil como tomar una foto.</h2>
+            <p>El cliente puede preparar su colección desde el teléfono. Busca el vino o fotografía la etiqueta; Divinos completa los datos disponibles y el equipo confirma precio, condición y ubicación al recibirla.</p>
+            <ol className="demo-intake-steps">
+              <li><b>01</b><span><strong>Foto o búsqueda</strong><small>Escanea la etiqueta o escribe el nombre.</small></span></li>
+              <li><b>02</b><span><strong>Confirmar datos</strong><small>Confirma añada, cantidad y precio si lo conoce.</small></span></li>
+              <li><b>03</b><span><strong>Enviar colección</strong><small>Queda pendiente para revisión de Divinos.</small></span></li>
+            </ol>
+          </div>
+          <div className="intake-phone" aria-label="Ejemplo del formulario móvil para registrar una botella">
+            <div className="intake-phone-top"><span>9:41</span><b>DIVINOS</b><span>•••</span></div>
+            <div className="intake-phone-body">
+              <div className="intake-progress"><i /><i /><i /></div>
+              <small className="demo-kicker">Botella 1 de 6</small>
+              <h3>Añadir a mi colección</h3>
+              <div className="intake-photo">
+                <LabelArtwork wine={inventory[2]} compact />
+                <div><b>Etiqueta encontrada</b><span>Datos completados automáticamente</span><button type="button">Cambiar foto</button></div>
+              </div>
+              <label>Vino<input readOnly value="Vega Sicilia Único" /></label>
+              <div className="intake-fields"><label>Añada<input readOnly value="2014" /></label><label>Cantidad<input readOnly value="6" /></label></div>
+              <label>Precio de compra (opcional)<input readOnly value="$ 395.00" /></label>
+              <button type="button" className="intake-submit">Añadir 6 botellas</button>
+              <span className="intake-note">Divinos verificará la información al recibirlas.</span>
+            </div>
+          </div>
+        </section>
+
         <section className="demo-grid">
           <div className="card stack">
             <div className="row between"><div><span className="demo-kicker">Almacenamiento</span><h2>Ocupación de la cava</h2></div><strong>78%</strong></div>
@@ -72,7 +144,7 @@ export function Demo() {
           <div className="demo-activity">
             {activity.map(([wine, location, action]) => (
               <div className="demo-activity-row" key={wine}>
-                <span className="demo-bottle">🍷</span><div><strong>{wine}</strong><small>{location}</small></div><span className="badge">{action}</span>
+                <LabelArtwork wine={inventory.find((item) => wine.startsWith(item.name)) ?? inventory[0]} compact /><div><strong>{wine}</strong><small>{location}</small></div><span className="badge">{action}</span>
               </div>
             ))}
           </div>
