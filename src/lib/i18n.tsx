@@ -4,7 +4,7 @@ export type Lang = 'es' | 'en'
 
 const dict = {
   es: {
-    appName: 'Cava',
+    appName: 'Divinos',
     signIn: 'Iniciar sesión', signUp: 'Crear cuenta', signOut: 'Salir', email: 'Correo', password: 'Contraseña',
     fullName: 'Nombre', haveAccount: '¿Ya tienes cuenta?', noAccount: '¿No tienes cuenta?',
     checkEmail: 'Revisa tu correo para confirmar la cuenta.', notConfigured: 'Falta configurar VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.',
@@ -28,7 +28,7 @@ const dict = {
     installHint: 'Instala la app: en iPhone usa Compartir → Añadir a pantalla de inicio.', perBottle: 'por botella',
   },
   en: {
-    appName: 'Cava',
+    appName: 'Divinos',
     signIn: 'Sign in', signUp: 'Create account', signOut: 'Sign out', email: 'Email', password: 'Password',
     fullName: 'Name', haveAccount: 'Already have an account?', noAccount: 'No account yet?',
     checkEmail: 'Check your email to confirm your account.', notConfigured: 'VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are not set.',
