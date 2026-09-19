@@ -94,6 +94,7 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .slot.full { background: var(--wine); color: #fff; border-color: var(--wine); }
 .slot.mine { outline: 3px solid var(--gold); }
 .slot.sel { background: var(--gold); color: #fff; border-color: var(--gold); }
+.rack-page-actions { min-width: 0; }
 .photo-btn { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2px dashed var(--line); border-radius: 12px; padding: 14px; background: #fff; cursor: pointer; color: var(--muted); }
 .photo-btn input { display: none; }
 .label-search { background: #fbf8f5; border: 1px solid var(--line); box-shadow: none; }
@@ -267,6 +268,17 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 }
 .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .table-scroll .table { min-width: 500px; }
+@media (max-width: 640px) {
+  .rack-page-head { align-items: stretch; flex-direction: column; }
+  .rack-page-actions { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); width: 100%; }
+  .rack-page-actions select, .rack-page-actions .btn { width: 100%; min-width: 0; }
+  .rackmap { width: 100%; overflow-x: visible; gap: 2px; padding: 2px 0 0; }
+  .shelfrow { display: grid; grid-template-columns: 32px minmax(0,1fr); align-items: start; gap: 7px; width: 100%; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .shelfrow:last-child { border-bottom: 0; }
+  .shelfrow .shelflabel { position: static; width: auto; padding-top: 13px; text-align: left; font-size: .78rem; font-weight: 700; background: transparent; }
+  .slots { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 6px; width: 100%; }
+  .slot { width: 100%; height: auto; min-height: 46px; aspect-ratio: 1 / 1; border-radius: 11px; font-size: .8rem; }
+}
 @media (max-width: 380px) {
   .topbar { padding-left: 10px; padding-right: 10px; gap: 6px; }
   .topbar .brand .brandmark img { width: 96px; }

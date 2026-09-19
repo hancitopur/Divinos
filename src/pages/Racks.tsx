@@ -18,9 +18,9 @@ export function Racks() {
 
   return (
     <div className="stack">
-      <div className="row between">
+      <div className="row between rack-page-head">
         <h1>{t('racks')}</h1>
-        <div className="row">
+        <div className="row rack-page-actions">
           {racks.length > 0 && <select onChange={(e) => { const r = racks.find((x) => x.id === e.target.value); if (r) setEditing(r) }} value="" style={{ border: '1px solid var(--line)', borderRadius: 8, padding: '6px 8px', background: '#fff' }}>
             <option value="">{t('edit')}…</option>{racks.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>}
