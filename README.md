@@ -1,4 +1,4 @@
-# Cava · Wine Storage Inventory
+# Divinos · Wine Storage Inventory
 
 Inventario de storage de vinos para clientes. PWA (React + Vite) sobre Supabase, desplegada en Render.
 
