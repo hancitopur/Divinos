@@ -1,4 +1,4 @@
-import { BrowserRouter, NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { AuthProvider, useAuth } from './lib/auth'
 import { I18nProvider, useT } from './lib/i18n'
@@ -79,7 +79,7 @@ export default function App() {
   return (
     <I18nProvider>
       <AuthProvider>
-        <BrowserRouter><Shell /></BrowserRouter>
+        <HashRouter><Shell /></HashRouter>
       </AuthProvider>
     </I18nProvider>
   )
