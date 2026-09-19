@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase, configured } from '../lib/supabase'
 import { useT } from '../lib/i18n'
 import { Field } from '../components/ui'
@@ -37,6 +38,8 @@ export function Login() {
         <button type="button" className="btn secondary" onClick={() => setMode(mode === 'in' ? 'up' : 'in')}>
           {mode === 'in' ? `${t('noAccount')} ${t('signUp')}` : `${t('haveAccount')} ${t('signIn')}`}
         </button>
+        <div className="auth-divider"><span>o</span></div>
+        <Link className="btn demo-entry" to="/demo">Ver demo para ventas</Link>
         <div className="row" style={{ justifyContent: 'center' }}>
           <select value={lang} onChange={(e) => setLang(e.target.value as any)} style={{ border: '1px solid var(--line)', borderRadius: 8, padding: '4px 8px', background: '#fff' }}>
             <option value="es">Español</option><option value="en">English</option>
