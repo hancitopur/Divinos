@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useT } from '../lib/i18n'
 import type { Wine, WineType } from '../lib/types'
 import { Empty, Field, Loading, PhotoPicker, Sheet, Thumb } from '../components/ui'
+import { importWineImage, searchWineImages, type WineImageResult } from '../lib/wineImages'
 
 const TYPES: WineType[] = ['red', 'white', 'rose', 'sparkling', 'dessert', 'fortified', 'other']
 
@@ -53,9 +54,12 @@ export function Wines() {
 }
 
 function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: () => void; onSaved: () => void }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const [f, setF] = useState<Partial<Wine>>({ ...wine })
   const [err, setErr] = useState<string | null>(null); const [busy, setBusy] = useState(false)
+  const [imageQuery, setImageQuery] = useState([wine.producer, wine.name, wine.vintage].filter(Boolean).join(' '))
+  const [imageResults, setImageResults] = useState<WineImageResult[]>([])
+  const [imageBusy, setImageBusy] = useState(false)
   const set = (k: keyof Wine, v: any) => setF((p) => ({ ...p, [k]: v }))
   const isNew = !wine.id
 
@@ -64,7 +68,8 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
     const payload = {
       name: f.name, producer: f.producer || null, vintage: f.vintage ? Number(f.vintage) : null, region: f.region || null,
       country: f.country || null, varietal: f.varietal || null, type: f.type || null, size_ml: Number(f.size_ml || 750),
-      label_photo_path: f.label_photo_path ?? null, notes: f.notes || null,
+      label_photo_path: f.label_photo_path ?? null, notes: f.notes || null, barcode: f.barcode || null,
+      label_source: f.label_source || null, label_source_url: f.label_source_url || null,
     }
     const { error } = isNew ? await supabase.from('wines').insert(payload) : await supabase.from('wines').update(payload).eq('id', wine.id!)
     setBusy(false); if (error) setErr(error.message); else onSaved()
@@ -78,7 +83,40 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
   return (
     <Sheet title={isNew ? t('newWine') : t('edit')} onClose={onClose}>
       <form className="stack" onSubmit={save}>
-        <Field label={t('labelPhoto')}><PhotoPicker path={f.label_photo_path} prefix="wines" onUploaded={(p) => set('label_photo_path', p)} /></Field>
+        <Field label={t('labelPhoto')}>
+          <PhotoPicker path={f.label_photo_path} prefix="wines" onUploaded={(p) => {
+            setF((prev) => ({ ...prev, label_photo_path: p, label_source: 'camera_upload', label_source_url: null }))
+          }} />
+        </Field>
+        <div className="label-search card stack">
+          <div>
+            <strong>{lang === 'es' ? 'Buscar etiqueta por nombre' : 'Find label by name'}</strong>
+            <div className="muted small">{lang === 'es' ? 'Open Food Facts + Wikimedia Commons. Confirma visualmente antes de escoger.' : 'Open Food Facts + Wikimedia Commons. Verify visually before selecting.'}</div>
+          </div>
+          <div className="row">
+            <input className="search" value={imageQuery} onChange={(e) => setImageQuery(e.target.value)} placeholder="Marca, vino y añada" />
+            <button type="button" className="btn" disabled={imageBusy || imageQuery.trim().length < 3} onClick={async () => {
+              setImageBusy(true); setErr(null)
+              try { setImageResults(await searchWineImages(imageQuery)) } catch (ex: any) { setErr(ex.message) } finally { setImageBusy(false) }
+            }}>{imageBusy ? '…' : lang === 'es' ? 'Buscar' : 'Search'}</button>
+          </div>
+          {imageResults.length > 0 && <div className="label-results">
+            {imageResults.map((result) => <button type="button" className="label-result" key={result.id} onClick={async () => {
+              setImageBusy(true); setErr(null)
+              try {
+                const path = await importWineImage(result)
+                setF((prev) => ({ ...prev, label_photo_path: path, label_source: result.source, label_source_url: result.sourceUrl, barcode: result.barcode || prev.barcode || null }))
+                setImageResults([])
+              } catch (ex: any) { setErr(ex.message) } finally { setImageBusy(false) }
+            }}>
+              <img src={result.thumbnailUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+              <span><b>{result.title}</b><small>{result.subtitle}</small></span>
+            </button>)}
+          </div>}
+          {f.label_source && <div className="muted small">
+            {f.label_source === 'camera_upload' ? (lang === 'es' ? 'Fuente: foto propia' : 'Source: own photo') : <>{lang === 'es' ? 'Fuente: ' : 'Source: '}<a className="source-link" href={f.label_source_url || '#'} target="_blank" rel="noreferrer">{f.label_source === 'open_food_facts' ? 'Open Food Facts' : 'Wikimedia Commons'}</a></>}
+          </div>}
+        </div>
         <Field label={t('name')}><input required value={f.name ?? ''} onChange={(e) => set('name', e.target.value)} /></Field>
         <div className="grid2">
           <Field label={t('producer')}><input value={f.producer ?? ''} onChange={(e) => set('producer', e.target.value)} /></Field>
@@ -90,6 +128,7 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
           <Field label={t('varietal')}><input value={f.varietal ?? ''} onChange={(e) => set('varietal', e.target.value)} /></Field>
           <Field label={t('region')}><input value={f.region ?? ''} onChange={(e) => set('region', e.target.value)} /></Field>
           <Field label={t('country')}><input value={f.country ?? ''} onChange={(e) => set('country', e.target.value)} /></Field>
+          <Field label="UPC / EAN"><input inputMode="numeric" value={f.barcode ?? ''} onChange={(e) => set('barcode', e.target.value.replace(/\D/g, ''))} /></Field>
         </div>
         <Field label={t('notes')}><textarea rows={2} value={f.notes ?? ''} onChange={(e) => set('notes', e.target.value)} /></Field>
         {err && <div className="error">{err}</div>}
