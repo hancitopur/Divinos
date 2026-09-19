@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase, configured } from '../lib/supabase'
 import { useT } from '../lib/i18n'
 import { Field } from '../components/ui'
+import { Brand } from '../components/Brand'
 
 export function Login() {
   const { t, lang, setLang } = useT()
@@ -26,8 +27,7 @@ export function Login() {
   return (
     <div className="auth">
       <form className="card stack" onSubmit={submit}>
-        <img className="logo" src="/icon-192.png" alt="" />
-        <h1 style={{ textAlign: 'center' }}>{t('appName')}</h1>
+        <Brand className="auth-brand" />
         {!configured && <div className="error">{t('notConfigured')}</div>}
         {mode === 'up' && <Field label={t('fullName')}><input value={name} onChange={(e) => setName(e.target.value)} required /></Field>}
         <Field label={t('email')}><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></Field>
@@ -40,6 +40,7 @@ export function Login() {
         </button>
         <div className="auth-divider"><span>o</span></div>
         <Link className="btn demo-entry" to="/demo">Ver demo para ventas</Link>
+        <Link className="small muted" style={{ textAlign: 'center' }} to="/">Volver a divinospr.com</Link>
         <div className="row" style={{ justifyContent: 'center' }}>
           <select value={lang} onChange={(e) => setLang(e.target.value as any)} style={{ border: '1px solid var(--line)', borderRadius: 8, padding: '4px 8px', background: '#fff' }}>
             <option value="es">Español</option><option value="en">English</option>

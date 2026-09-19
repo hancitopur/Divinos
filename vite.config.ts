@@ -7,19 +7,18 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['divinos-logo.png', 'divinos-d.png'],
       manifest: {
         name: 'Divinos · Wine Storage',
         short_name: 'Divinos',
-        description: 'Wine storage inventory',
+        description: 'Organiza, localiza y conoce el valor de tu colección de vinos.',
         theme_color: '#5b1a2b',
         background_color: '#f6f1ec',
         display: 'standalone',
         start_url: '/',
         icons: [
-          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
         ]
       },
       workbox: {

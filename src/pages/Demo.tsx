@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Brand } from '../components/Brand'
 
 const clients = [
   { name: 'Familia Rivera', bottles: 84, value: '$18,640', change: '+6 este mes' },
@@ -16,10 +17,10 @@ export function Demo() {
   return (
     <div className="demo-shell">
       <header className="demo-topbar">
-        <div className="demo-brand"><img src="/icon-192.png" alt="" /><span>Divinos</span></div>
+        <div className="demo-brand"><Brand light /></div>
         <div className="row">
           <span className="demo-pill">Demo interactivo</span>
-          <Link className="btn sm demo-login" to="/">Entrar</Link>
+          <Link className="btn sm demo-login" to="/login">Entrar</Link>
         </div>
       </header>
 
@@ -79,7 +80,7 @@ export function Demo() {
 
         <section className="demo-cta">
           <div><span className="demo-eyebrow">De la cava a la data</span><h2>¿Listo para controlar tu inventario?</h2><p>Configura racks, registra clientes y conoce el valor real de cada colección.</p></div>
-          <Link className="btn" to="/">Solicitar acceso</Link>
+          <Link className="btn" to="/#planes">Solicitar acceso</Link>
         </section>
         <p className="demo-disclaimer">Esta pantalla usa información simulada y no muestra datos de clientes reales.</p>
       </main>

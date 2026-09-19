@@ -10,6 +10,8 @@ import { Wines } from './pages/Wines'
 import { Racks } from './pages/Racks'
 import { Clients } from './pages/Clients'
 import { Demo } from './pages/Demo'
+import { Landing } from './pages/Landing'
+import { Brand } from './components/Brand'
 import { Loading } from './components/ui'
 
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
@@ -37,7 +39,9 @@ function Shell() {
   if (!session) return (
     <Routes>
       <Route path="/demo" element={<Demo />} />
-      <Route path="*" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 
@@ -52,7 +56,7 @@ function Shell() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand"><img src="/icon-192.png" alt="" />{t('appName')}</div>
+        <div className="brand"><Brand light /></div>
         <div className="actions">
           <select value={lang} onChange={(e) => setLang(e.target.value as any)} aria-label={t('language')}>
             <option value="es">ES</option><option value="en">EN</option>

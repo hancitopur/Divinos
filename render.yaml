@@ -9,6 +9,10 @@ services:
         sync: false
       - key: VITE_SUPABASE_ANON_KEY
         sync: false
+      - key: VITE_STRIPE_MEMBERSHIP_URL
+        sync: false
+      - key: VITE_STRIPE_RENTAL_URL
+        sync: false
     routes:
       - type: rewrite
         source: /*
