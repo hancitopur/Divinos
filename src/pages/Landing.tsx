@@ -5,10 +5,17 @@ const membershipUrl = import.meta.env.VITE_STRIPE_MEMBERSHIP_URL as string | und
 const rentalUrl = import.meta.env.VITE_STRIPE_RENTAL_URL as string | undefined
 
 const features = [
-  ['Inventario visual', 'Encuentra cada botella por nombre, etiqueta, marca, región o ubicación.'],
-  ['Valor de tu colección', 'Conoce inversión, precio de venta y valor total en tiempo real.'],
-  ['Tu cava, organizada', 'Mapa por rack, sección y posición para saber exactamente dónde está todo.'],
-  ['Desde el teléfono', 'Registra entradas, movimientos y fotos de etiqueta mientras estás frente a la cava.'],
+  ['Registra', 'Fotografía la etiqueta y Divinos completa los datos disponibles.'],
+  ['Organiza', 'Cada botella queda asignada a un rack y una posición exacta.'],
+  ['Protege', 'Temperatura controlada, cámaras y seguridad 24 horas.'],
+  ['Disfruta', 'Encuentra tu vino y conoce el valor de tu colección desde el teléfono.'],
+]
+
+const storagePlans = [
+  { name: 'Digital', capacity: 'Tu propia cava', price: '9', note: 'Inventario y aplicación' },
+  { name: 'Inicial', capacity: 'Hasta 24 botellas', price: '29', note: '2 cajas almacenadas' },
+  { name: 'Reserva', capacity: 'Hasta 72 botellas', price: '49', note: '6 cajas almacenadas', featured: true },
+  { name: 'Colección', capacity: 'Hasta 144 botellas', price: '79', note: '12 cajas almacenadas' },
 ]
 
 function PayLink({ href, children, secondary = false }: { href?: string; children: string; secondary?: boolean }) {
@@ -36,10 +43,10 @@ export function Landing() {
         <section className="landing-hero">
           <div className="hero-copy">
             <span className="landing-kicker">Tu colección. Siempre localizada.</span>
-            <h1>La forma inteligente de organizar y valorar tus vinos.</h1>
-            <p>Divinos convierte tu cava en un inventario claro y visual. Registra botellas, identifica etiquetas y conoce el valor de tu colección desde cualquier lugar.</p>
+            <h1>Tu colección merece el lugar correcto.</h1>
+            <p>Almacenamiento climatizado y control digital para proteger, localizar y conocer el valor de cada botella.</p>
             <div className="hero-actions">
-              <Jump className="btn landing-btn" to="planes">Comenzar</Jump>
+              <Jump className="btn landing-btn" to="planes">Reservar mi espacio</Jump>
               <Link className="btn landing-btn secondary" to="/demo">Ver demo</Link>
             </div>
           </div>
@@ -55,41 +62,39 @@ export function Landing() {
           </div>
         </section>
 
-        <section className="landing-strip" aria-label="Beneficios principales">
-          <span>Etiqueta o foto</span><i /> <span>Ubicación exacta</span><i /> <span>Valor actualizado</span><i /> <span>Acceso móvil</span>
+        <section className="landing-strip security-strip" aria-label="Protección de la cava">
+          <span><b>55–58°F</b> Temperatura controlada</span><i /> <span><b>24/7</b> Seguridad</span><i /> <span><b>Siempre</b> Cámaras activas</span><i /> <span><b>En vivo</b> Inventario digital</span>
         </section>
 
         <section className="landing-section" id="como-funciona">
-          <div className="section-heading"><span className="landing-kicker">Todo en su lugar</span><h2>Menos tiempo buscando. Más tiempo disfrutando.</h2></div>
+          <div className="section-heading"><span className="landing-kicker">Simple desde el primer día</span><h2>De la etiqueta a tu cava en cuatro pasos.</h2></div>
           <div className="feature-grid">
-            {features.map(([title, body], index) => <article key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{body}</p></article>)}
+            {features.map(([title, body], index) => <article key={title}><span>{index + 1}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}
           </div>
         </section>
 
         <section className="landing-section plans-section" id="planes">
-          <div className="section-heading"><span className="landing-kicker">Elige cómo usar Divinos</span><h2>Tu cava digital, con o sin espacio físico.</h2><p>Empieza administrando tu propia colección o solicita almacenamiento profesional.</p></div>
-          <div className="plan-grid">
-            <article className="plan-card featured">
-              <span className="plan-label">Membresía</span><h3>Divinos Digital</h3>
-              <p>Para coleccionistas que quieren organizar, valorar y controlar su propia cava.</p>
-              <ul><li>Inventario de botellas</li><li>Búsqueda de etiquetas</li><li>Mapa de racks</li><li>Valor y movimientos</li></ul>
-              <PayLink href={membershipUrl}>Obtener membresía</PayLink>
-            </article>
-            <article className="plan-card dark">
-              <span className="plan-label">Renta</span><h3>Cava administrada</h3>
-              <p>Espacio climatizado y control digital para guardar tu colección con trazabilidad.</p>
-              <ul><li>Espacio según capacidad</li><li>Inventario incluido</li><li>Recepción y ubicación</li><li>Acceso a tu colección</li></ul>
-              <PayLink href={rentalUrl} secondary>Solicitar espacio</PayLink>
-            </article>
+          <div className="section-heading"><span className="landing-kicker">Planes claros</span><h2>Empieza pequeño. Crece sin mover tu colección.</h2><p>Todos los planes físicos incluyen inventario digital, temperatura controlada, cámaras y seguridad 24 horas.</p></div>
+          <div className="pricing-line">
+            {storagePlans.map((plan) => (
+              <article className={plan.featured ? 'featured' : ''} key={plan.name}>
+                {plan.featured && <span className="popular">Más elegido</span>}
+                <span className="plan-label">{plan.name}</span>
+                <strong><sup>$</sup>{plan.price}<small>/mes</small></strong>
+                <h3>{plan.capacity}</h3><p>{plan.note}</p>
+                <PayLink href={plan.name === 'Digital' ? membershipUrl : rentalUrl} secondary={plan.name !== 'Digital'}>{plan.name === 'Digital' ? 'Activar app' : 'Reservar'}</PayLink>
+              </article>
+            ))}
           </div>
+          <div className="included-line"><span>Incluido con almacenamiento</span><b>Control de temperatura</b><b>Videovigilancia</b><b>Seguridad 24/7</b><b>Inventario en Divinos</b></div>
           {!membershipUrl && <p className="payment-note">La solicitud está activa. El cobro en línea se habilitará al definir precios y conectar la cuenta de pagos.</p>}
         </section>
 
         <section className="landing-final">
           <Brand light />
-          <h2>Tu colección merece más que una lista.</h2>
-          <p>Descubre dónde está cada botella, cuánto vale y cómo está creciendo tu cava.</p>
-          <Jump className="btn landing-btn gold" to="planes">Comenzar con Divinos</Jump>
+          <h2>Protege hoy lo que quieres abrir mañana.</h2>
+          <p>Reserva el espacio adecuado y controla tu colección completa desde el teléfono.</p>
+          <Jump className="btn landing-btn gold" to="planes">Ver disponibilidad</Jump>
         </section>
       </main>
 
