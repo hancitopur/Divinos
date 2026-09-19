@@ -13,7 +13,6 @@ const features = [
 
 const storagePlans = [
   { name: 'Digital', capacity: 'Tu propia cava', price: '9', note: 'Inventario y aplicación' },
-  { name: 'Inicial', capacity: 'Hasta 24 botellas', price: '29', note: '2 cajas almacenadas' },
   { name: 'Reserva', capacity: 'Hasta 72 botellas', price: '49', note: '6 cajas almacenadas', featured: true },
   { name: 'Colección', capacity: 'Hasta 144 botellas', price: '79', note: '12 cajas almacenadas' },
 ]

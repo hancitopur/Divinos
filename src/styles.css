@@ -212,7 +212,7 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .plans-section { max-width: none; background: #f1ebe5; }
 .plans-section > * { max-width: 1132px; margin-left: auto; margin-right: auto; }
 .plan-label { color: var(--gold); text-transform: uppercase; letter-spacing: .12em; font-size: .7rem; font-weight: 800; }
-.pricing-line { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); border-top: 1px solid #cfc0ba; border-bottom: 1px solid #cfc0ba; }
+.pricing-line { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); border-top: 1px solid #cfc0ba; border-bottom: 1px solid #cfc0ba; }
 .pricing-line article { position: relative; min-height: 330px; padding: 30px 24px; border-right: 1px solid #cfc0ba; display: flex; flex-direction: column; align-items: flex-start; }
 .pricing-line article:last-child { border-right: 0; }
 .pricing-line article.featured { background: var(--wine-dark); color: #fff; transform: translateY(-12px); box-shadow: 0 18px 42px rgba(63,15,28,.16); }
@@ -250,9 +250,8 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
   .feature-grid { grid-template-columns: 1fr 1fr; }
   .feature-grid article { min-height: 210px; border-bottom: 1px solid rgba(255,255,255,.13); }
   .feature-grid article:nth-child(2) { border-right: 0; }
-  .pricing-line { grid-template-columns: 1fr 1fr; }
-  .pricing-line article { min-height: 300px; border-bottom: 1px solid #cfc0ba; }
-  .pricing-line article:nth-child(2) { border-right: 0; }
+  .pricing-line { grid-template-columns: 1fr; }
+  .pricing-line article { min-height: 280px; border-right: 0; border-bottom: 1px solid #cfc0ba; }
   .pricing-line article.featured { transform: none; }
   .landing-footer { flex-wrap: wrap; }
   .mobile-buybar { position: fixed; z-index: 45; left: 10px; right: 10px; bottom: calc(10px + var(--safe-b)); min-height: 58px; padding: 8px 8px 8px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 18px; background: rgba(63,15,28,.96); color: #fff; box-shadow: 0 12px 34px rgba(36,26,28,.3); backdrop-filter: blur(14px); }
