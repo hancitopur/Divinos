@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Cava · Wine Storage',
-        short_name: 'Cava',
+        name: 'Divinos · Wine Storage',
+        short_name: 'Divinos',
         description: 'Wine storage inventory',
         theme_color: '#5b1a2b',
         background_color: '#f6f1ec',
