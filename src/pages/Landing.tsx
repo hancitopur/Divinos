@@ -16,14 +16,18 @@ function PayLink({ href, children, secondary = false }: { href?: string; childre
   return <a className={`btn landing-btn ${secondary ? 'secondary' : ''}`} href="mailto:info@grafichee.com?subject=Quiero%20Divinos">{children}</a>
 }
 
+function Jump({ to, className = '', children }: { to: string; className?: string; children: string }) {
+  return <a className={className} href={`#${to}`} onClick={(event) => { event.preventDefault(); document.getElementById(to)?.scrollIntoView({ behavior: 'smooth' }) }}>{children}</a>
+}
+
 export function Landing() {
   return (
     <div className="landing">
       <header className="landing-nav">
         <Link to="/" aria-label="Divinos, inicio"><Brand /></Link>
         <nav aria-label="Navegación principal">
-          <a href="#como-funciona">Cómo funciona</a>
-          <a href="#planes">Planes</a>
+          <Jump to="como-funciona">Cómo funciona</Jump>
+          <Jump to="planes">Planes</Jump>
           <Link className="landing-signin" to="/login">Entrar</Link>
         </nav>
       </header>
@@ -35,7 +39,7 @@ export function Landing() {
             <h1>La forma inteligente de organizar y valorar tus vinos.</h1>
             <p>Divinos convierte tu cava en un inventario claro y visual. Registra botellas, identifica etiquetas y conoce el valor de tu colección desde cualquier lugar.</p>
             <div className="hero-actions">
-              <a className="btn landing-btn" href="#planes">Comenzar</a>
+              <Jump className="btn landing-btn" to="planes">Comenzar</Jump>
               <Link className="btn landing-btn secondary" to="/demo">Ver demo</Link>
             </div>
           </div>
@@ -85,7 +89,7 @@ export function Landing() {
           <Brand light />
           <h2>Tu colección merece más que una lista.</h2>
           <p>Descubre dónde está cada botella, cuánto vale y cómo está creciendo tu cava.</p>
-          <a className="btn landing-btn gold" href="#planes">Comenzar con Divinos</a>
+          <Jump className="btn landing-btn gold" to="planes">Comenzar con Divinos</Jump>
         </section>
       </main>
 

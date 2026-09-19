@@ -80,7 +80,7 @@ export function Demo() {
 
         <section className="demo-cta">
           <div><span className="demo-eyebrow">De la cava a la data</span><h2>¿Listo para controlar tu inventario?</h2><p>Configura racks, registra clientes y conoce el valor real de cada colección.</p></div>
-          <Link className="btn" to="/#planes">Solicitar acceso</Link>
+          <Link className="btn" to="/">Solicitar acceso</Link>
         </section>
         <p className="demo-disclaimer">Esta pantalla usa información simulada y no muestra datos de clientes reales.</p>
       </main>
