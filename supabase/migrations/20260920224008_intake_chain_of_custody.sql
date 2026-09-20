@@ -38,6 +38,9 @@ create table if not exists public.intake_events (
   created_at timestamptz not null default now()
 );
 create index if not exists intake_events_request_created_idx on public.intake_events(request_id, created_at);
+create index if not exists intake_events_actor_idx on public.intake_events(actor_id);
+create index if not exists intake_events_item_idx on public.intake_events(item_id) where item_id is not null;
+create index if not exists intake_items_verified_by_idx on public.intake_items(verified_by) where verified_by is not null;
 alter table public.intake_events enable row level security;
 
 drop policy if exists intake_events_staff_read on public.intake_events;
