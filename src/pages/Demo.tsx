@@ -87,6 +87,11 @@ export function Demo() {
           </div>
         </section>
 
+        <section className="demo-shop-preview">
+          <div className="demo-section-head"><div><span className="demo-kicker">Nuevo · acceso anticipado</span><h2>Cava Privada para miembros</h2><p>Las nuevas llegadas aparecen primero aquí. PayPal confirma la compra y Divinos asigna la botella al próximo espacio disponible.</p></div><Link className="btn" to="/login?plan=reserva">Quiero acceso</Link></div>
+          <div className="demo-shop-grid">{inventory.slice(3,5).map((wine,index)=><article key={wine.name}><LabelArtwork wine={wine}/><div><small>{wine.origin}</small><h3>{wine.name} {wine.vintage}</h3><p>{index===0?'12 botellas disponibles':'6 botellas disponibles'}</p><strong>{index===0?'$342.93':'$310.68'} <small>con servicio</small></strong><span>Compra → inventario → rack asignado</span></div></article>)}</div>
+        </section>
+
         <section className="demo-intake">
           <div className="demo-intake-copy">
             <span className="demo-eyebrow">Entrada del cliente</span>
