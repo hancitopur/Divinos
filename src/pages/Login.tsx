@@ -5,14 +5,18 @@ import { Field } from '../components/ui'
 
 export function Login() {
   const { t, lang, setLang } = useT()
-  const [mode, setMode] = useState<'in' | 'up'>('in')
+  const [mode, setMode] = useState<'in' | 'up' | 'forgot'>('in')
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [name, setName] = useState('')
   const [err, setErr] = useState<string | null>(null); const [msg, setMsg] = useState<string | null>(null); const [busy, setBusy] = useState(false)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(null); setMsg(null); setBusy(true)
     try {
-      if (mode === 'in') {
+      if (mode === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` })
+        if (error) throw error
+        setMsg('Te enviamos un enlace seguro. Revisa también Promociones o Spam.')
+      } else if (mode === 'in') {
         const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) throw error
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } })
@@ -28,14 +32,16 @@ export function Login() {
         <img className="logo" src="/icon.svg" alt="" />
         <h1 style={{ textAlign: 'center' }}>{t('appName')}</h1>
         {!configured && <div className="error">{t('notConfigured')}</div>}
+        {mode === 'forgot' && <div className="auth-intro"><h2>Recupera tu acceso</h2><p className="muted small">Escribe tu correo y recibirás un enlace para crear una contraseña nueva.</p></div>}
         {mode === 'up' && <Field label={t('fullName')}><input value={name} onChange={(e) => setName(e.target.value)} required /></Field>}
         <Field label={t('email')}><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></Field>
-        <Field label={t('password')}><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} /></Field>
+        {mode !== 'forgot' && <Field label={t('password')}><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} /></Field>}
         {err && <div className="error">{err}</div>}
         {msg && <div className="info">{msg}</div>}
-        <button className="btn" disabled={busy || !configured}>{mode === 'in' ? t('signIn') : t('signUp')}</button>
-        <button type="button" className="btn secondary" onClick={() => setMode(mode === 'in' ? 'up' : 'in')}>
-          {mode === 'in' ? `${t('noAccount')} ${t('signUp')}` : `${t('haveAccount')} ${t('signIn')}`}
+        <button className="btn" disabled={busy || !configured}>{mode === 'forgot' ? 'Enviar enlace' : mode === 'in' ? t('signIn') : t('signUp')}</button>
+        {mode === 'in' && <button type="button" className="auth-link" onClick={() => { setMode('forgot'); setErr(null); setMsg(null) }}>¿Olvidaste tu contraseña?</button>}
+        <button type="button" className="btn secondary" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setErr(null); setMsg(null) }}>
+          {mode === 'in' ? `${t('noAccount')} ${t('signUp')}` : mode === 'forgot' ? 'Volver a iniciar sesión' : `${t('haveAccount')} ${t('signIn')}`}
         </button>
         <div className="row" style={{ justifyContent: 'center' }}>
           <select value={lang} onChange={(e) => setLang(e.target.value as any)} style={{ border: '1px solid var(--line)', borderRadius: 8, padding: '4px 8px', background: '#fff' }}>
