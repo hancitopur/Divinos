@@ -11,6 +11,9 @@ const plans: Array<{ id: MembershipPlan; name: string; price: number; detail: st
   { id: 'coleccion', name: 'Colección', price: 79, detail: 'Aplicación + hasta 144 botellas' },
 ]
 
+const SERVICE_FEE_RATE = 0.075
+const money = (cents: number) => `$${(cents / 100).toFixed(2)}`
+
 type Details = Omit<CustomerOnboarding, 'user_id' | 'updated_at'>
 const emptyDetails: Details = { legal_name: '', phone: '', address_line1: '', address_line2: '', city: '', region: 'PR', postal_code: '' }
 
@@ -24,6 +27,9 @@ export function AccountPending({ membership }: { membership: Membership | null }
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null)
   const status = membership?.status
   const plan = plans.find((item) => item.id === selected)!
+  const baseCents = plan.price * 100
+  const feeCents = Math.round(baseCents * SERVICE_FEE_RATE)
+  const totalCents = baseCents + feeCents
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -85,12 +91,12 @@ export function AccountPending({ membership }: { membership: Membership | null }
         <section className="pending-section pending-consent">
           <div className="pending-step"><b>3</b><span><strong>Acuerdo y cargos</strong><small>Ambas aceptaciones son obligatorias antes de PayPal.</small></span></div>
           <label className="terms-check"><input type="checkbox" checked={acceptedLegal} onChange={(e)=>setAcceptedLegal(e.target.checked)} required /> Leí y acepto el <Link to="/terms" target="_blank">acuerdo legal y los términos y condiciones</Link>.</label>
-          <label className="terms-check"><input type="checkbox" checked={acceptedCharges} onChange={(e)=>setAcceptedCharges(e.target.checked)} required /> Autorizo el cargo recurrente de <strong>${plan.price}.00/mes</strong> mediante PayPal, más impuestos aplicables. Los servicios adicionales solo se cobrarán si se informan y acepto su importe.</label>
-          <div className="charge-summary"><span>Cargo mensual del plan {plan.name}</span><strong>${plan.price}.00 USD</strong><small>Renovación automática. Puedes cancelar desde PayPal.</small></div>
+          <label className="terms-check"><input type="checkbox" checked={acceptedCharges} onChange={(e)=>setAcceptedCharges(e.target.checked)} required /> Autorizo el cargo recurrente total de <strong>{money(totalCents)}/mes</strong> mediante PayPal, compuesto por {money(baseCents)} del plan y {money(feeCents)} de cargo de servicio (7.5%), más impuestos aplicables.</label>
+          <div className="charge-summary"><span>Plan {plan.name}</span><strong>{money(baseCents)}</strong><span>Cargo de servicio · 7.5%</span><strong>{money(feeCents)}</strong><span className="charge-total">Total mensual</span><strong className="charge-total">{money(totalCents)} USD</strong><small>Renovación automática. Puedes cancelar desde PayPal.</small></div>
         </section>
 
         {error && <div className="error">{error}</div>}
-        <button className="btn pending-pay" disabled={busy || !acceptedLegal || !acceptedCharges}>{busy ? 'Validando y conectando…' : `Aceptar y continuar a PayPal · $${plan.price}/mes`}</button>
+        <button className="btn pending-pay" disabled={busy || !acceptedLegal || !acceptedCharges}>{busy ? 'Validando y conectando…' : `Aceptar y continuar a PayPal · ${money(totalCents)}/mes`}</button>
       </form>
       <div className="pending-security"><span>🔒 Información privada</span><span>✓ Pago verificado por PayPal</span><span>✓ Acceso solo con cuenta pagada</span></div>
       {params.get('payment') === 'return' && <div className="info">PayPal está confirmando tu suscripción. Actualiza esta página en unos segundos.</div>}

@@ -421,6 +421,7 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .pending-consent .pending-step { margin-bottom: 2px; }
 .charge-summary { padding: 14px 15px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 3px 12px; color: var(--wine-dark); background: #f1e5c9; border-radius: 12px; }
 .charge-summary strong { font: 600 1.15rem Georgia,serif; }
+.charge-summary .charge-total { margin-top: 7px; padding-top: 9px; border-top: 1px solid rgba(91,26,43,.18); font-weight: 800; }
 .charge-summary small { grid-column: 1 / -1; opacity: .65; }
 .pending-pay { width: 100%; min-height: 54px; margin-top: 20px; background: #ffc439; color: #172c45; border-radius: 14px; }
 .pending-pay:disabled { opacity: .5; cursor: not-allowed; }

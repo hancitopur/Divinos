@@ -82,7 +82,7 @@ export function Landing() {
             ))}
           </div>
           <div className="included-line"><span>Incluido con almacenamiento</span><b>Control de temperatura</b><b>Videovigilancia</b><b>Seguridad 24/7</b><b>Inventario en Divinos</b></div>
-          <p className="payment-note">Pago recurrente protegido por PayPal. La cuenta se activa solamente cuando PayPal confirma la suscripción.</p>
+          <p className="payment-note">A cada plan se añade un cargo de servicio de 7.5%, claramente desglosado antes de pagar. Pago recurrente protegido por PayPal; la cuenta se activa solamente cuando PayPal confirma la suscripción.</p>
         </section>
 
         <section className="landing-final">

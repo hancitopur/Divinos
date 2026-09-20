@@ -8,9 +8,10 @@ const cors = {
 }
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
-const TERMS_VERSION = '2026-09-20-v2-draft'
-const BILLING_VERSION = '2026-09-20-v1'
-const PLAN_PRICES: Record<string, number> = { digital: 9, reserva: 49, coleccion: 79 }
+const TERMS_VERSION = '2026-09-20-v3-draft'
+const BILLING_VERSION = '2026-09-20-v2-service-fee'
+const PLAN_BASE_CENTS: Record<string, number> = { digital: 900, reserva: 4900, coleccion: 7900 }
+const SERVICE_FEE_RATE = 0.075
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -48,6 +49,17 @@ Deno.serve(async (req) => {
     })
     if (!tokenResponse.ok) return json({ error: 'PayPal rechazó las credenciales configuradas.' }, 502)
     const { access_token } = await tokenResponse.json()
+    const baseCents = PLAN_BASE_CENTS[plan!]
+    const feeCents = Math.round(baseCents * SERVICE_FEE_RATE)
+    const totalCents = baseCents + feeCents
+    const configuredPlanResponse = await fetch(`${api}/v1/billing/plans/${planId}`, { headers: { Authorization: `Bearer ${access_token}` } })
+    if (!configuredPlanResponse.ok) return json({ error: 'No se pudo validar el plan configurado en PayPal.' }, 502)
+    const configuredPlan = await configuredPlanResponse.json()
+    const regularCycle = configuredPlan.billing_cycles?.find((cycle: any) => cycle.tenure_type === 'REGULAR')
+    const paypalCents = Math.round(Number(regularCycle?.pricing_scheme?.fixed_price?.value || 0) * 100)
+    if (configuredPlan.status !== 'ACTIVE' || paypalCents !== totalCents) {
+      return json({ error: `El plan de PayPal debe estar activo y cobrar $${(totalCents / 100).toFixed(2)} al mes, incluyendo el cargo de servicio de 7.5%.` }, 503)
+    }
 
     let { data: account } = await admin.from('client_accounts').select('client_id').eq('user_id', user.id).maybeSingle()
     if (!account) {
@@ -99,7 +111,8 @@ Deno.serve(async (req) => {
     if (!approvalUrl) return json({ error: 'PayPal no devolvió el enlace de aprobación.' }, 502)
     const { error: agreementError } = await admin.from('service_agreements').upsert({
       user_id: user.id, plan, terms_version: TERMS_VERSION, billing_version: BILLING_VERSION,
-      monthly_amount: PLAN_PRICES[plan!], currency: 'USD', paypal_subscription_id: subscription.id,
+      base_amount: baseCents / 100, service_fee_rate: 7.5, service_fee_amount: feeCents / 100,
+      monthly_amount: totalCents / 100, currency: 'USD', paypal_subscription_id: subscription.id,
     }, { onConflict: 'paypal_subscription_id' })
     if (agreementError) throw agreementError
     await admin.from('memberships').update({ status: 'approval_pending', paypal_subscription_id: subscription.id }).eq('user_id', user.id)
