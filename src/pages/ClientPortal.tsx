@@ -8,6 +8,14 @@ import type { BottleDetail, IntakeRequest, Membership, StorageSummary, WineType 
 import { importWineImage, searchWineImages, type WineImageResult } from '../lib/wineImages'
 
 const planName = (plan?: string) => ({ digital: 'Digital', reserva: 'Reserva', coleccion: 'Colección' }[plan || ''] || 'Divinos')
+const storePhoto = (name='') => {
+  const key=name.toLowerCase()
+  if(key.includes('artemis')) return '/wine-products/artemis-2021.webp'
+  if(key.includes('tignanello')) return '/wine-products/tignanello-2020.webp'
+  if(key.includes('gran reserva 904')) return '/wine-products/gran-reserva-904-2015.webp'
+  if(key.includes('erdener')) return '/wine-products/erdener-pralat-2020.webp'
+  return ''
+}
 
 export function ClientOverview() {
   const { membership } = useAuth(); const { lang } = useT()
@@ -96,7 +104,6 @@ export function ClientAccount() {
 export function ClientShop() {
   const { membership,profile }=useAuth(); const { lang }=useT(); const [params]=useSearchParams()
   const [offers,setOffers]=useState<any[]|null>(null); const [age,setAge]=useState(false); const [busy,setBusy]=useState<string|null>(null)
-  const [fulfillment,setFulfillment]=useState<Record<string,'storage'|'pickup'>>({})
   const [message,setMessage]=useState<{type:'ok'|'error';text:string}|null>(null)
   const load=()=>supabase.from('wine_sale_offers').select('*, wines(*)').eq('active',true).order('featured',{ascending:false}).order('member_release_at',{ascending:false}).then(({data})=>setOffers(data??[]))
   useEffect(()=>{load()},[])
@@ -113,30 +120,31 @@ export function ClientShop() {
   const staffPreview=profile?.role==='admin'||profile?.role==='superadmin'
   const activeMember=membership?.status==='active'
   const physical=activeMember&&(membership?.plan==='reserva'||membership?.plan==='coleccion')
+  const checkout=async(offerId:string,mode:'storage'|'pickup')=>{setBusy(offerId);setMessage(null);const {data,error}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId,quantity:1,acceptAge:age,fulfillment:mode}});if(error||data?.error){setMessage({type:'error',text:data?.error||error?.message||'No se pudo iniciar el pago.'});setBusy(null)}else window.location.href=data.approval_url}
   return <div className="stack client-page private-shop">
-    <div className="shop-hero"><span className="landing-kicker">Tienda de vinos · acceso preferente</span><h1>Cava Privada</h1><p>Los miembros reciben precio preferente. Compra para recogido o envía la botella directamente a tu espacio en Divinos.</p>{activeMember&&!staffPreview&&<Link className="btn secondary" to="/sell">Vender una botella de mi colección</Link>}</div>
+    <div className="shop-hero"><span className="landing-kicker">Tienda Divinos</span><h1>Compra. Guarda. Disfruta.</h1><p>Elige tu botella y envíala directo a tu cava.</p>{activeMember&&!staffPreview&&<Link className="btn secondary" to="/sell">Vender de mi colección</Link>}</div>
     {message&&<div className={message.type==='ok'?'info':'error'}>{message.text}</div>}
-    {staffPreview?<div className="info"><b>Vista previa administrativa.</b> Puedes revisar toda la tienda; las compras están desactivadas en esta vista.</div>:activeMember?<div className="info"><b>Precio de miembro activado.</b> Tu cuenta recibe el precio preferente mostrado.</div>:<div className="legal-alert"><b>Precio regular.</b> Puedes comprar para recogido. Al activar una membresía recibes precio preferente y puedes escoger almacenamiento según el plan.</div>}
-    <label className="terms-check shop-age"><input type="checkbox" checked={age} onChange={(e)=>setAge(e.target.checked)} /> Certifico que tengo 18 años o más. La compra es para almacenamiento o recogido autorizado; Divinos no enviará alcohol por correo.</label>
+    <div className="shop-status">{staffPreview?'Vista administrativa · compra desactivada':activeMember?'✓ Precio de miembro activo':'Precio regular · recogido disponible'}</div>
+    {!staffPreview&&<label className="terms-check shop-age"><input type="checkbox" checked={age} onChange={(e)=>setAge(e.target.checked)} /> Confirmo que tengo 18 años o más.</label>}
     {offers===null?<Loading/>:offers.length===0?<div className="client-success"><span>◌</span><h2>Próximamente</h2><p>Las nuevas llegadas aparecerán aquí primero para los miembros de Divinos.</p></div>:<div className="shop-grid">{offers.map((offer)=>{
       const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines; const left=offer.quantity_available-offer.quantity_reserved-offer.quantity_sold
       const basePrice=Number(offer.price),memberPrice=Math.round(basePrice*107.5)/100,regularPrice=Math.round(basePrice*1.15*107.5)/100,total=activeMember?memberPrice:regularPrice
-      const mode=fulfillment[offer.id]||(physical?'storage':'pickup')
+      const photo=storePhoto(wine?.name)
       return <article className={offer.featured?'featured':''} key={offer.id}>
         <div className="shop-gallery">
-          <div className="shop-bottle-view">{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine?.name}/>:<div className="shop-bottle-fallback"><i/><span>{wine?.producer||'DIVINOS'}</span></div>}<small>Botella</small></div>
-          <div className="shop-label-view"><Thumb path={wine?.label_photo_path} label={`${wine?.name||'Vino'} ${wine?.vintage||''}`} /><small>Etiqueta</small></div>
+          <div className="shop-bottle-view">{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine?.name}/>:photo?<img src={photo} alt={`Botella de ${wine?.name||'vino'}`}/>:<div className="shop-bottle-fallback"><i/><span>{wine?.producer||'DIVINOS'}</span></div>}</div>
+          <div className="shop-label-view">{wine?.label_photo_path?<Thumb path={wine.label_photo_path} label={`${wine?.name||'Vino'} ${wine?.vintage||''}`} />:photo?<img src={photo} alt={`Etiqueta de ${wine?.name||'vino'}`}/>:null}<small>Ver etiqueta</small></div>
           {offer.featured&&<span>Selección Divinos</span>}
         </div>
-        <div className="shop-copy"><small>{offer.offer_source==='member'?'Colección de miembro':'Inventario Divinos'}</small><h2>{wine?.name} {wine?.vintage||''}</h2><p>{String(offer.description||wine?.producer||'').replace(/^\[DEMO\]\s*/, '')}</p>
-          <div className="wine-facts"><span><b>Productor</b>{wine?.producer||'—'}</span><span><b>Región</b>{wine?.region||'—'}</span><span><b>País</b>{wine?.country||'—'}</span><span><b>Añada</b>{wine?.vintage||'N/V'}</span></div>
-          <div className="shop-tier-prices"><span className={activeMember?'selected':''}><small>Miembro</small><b>{money(memberPrice,lang)}</b></span><span className={!activeMember?'selected':''}><small>Regular</small><b>{money(regularPrice,lang)}</b></span></div>
-          {!staffPreview&&<div className="fulfillment-choice"><button type="button" className={mode==='storage'?'selected':''} disabled={!physical} onClick={()=>setFulfillment({...fulfillment,[offer.id]:'storage'})}><b>Guardar en mi cava</b><small>{physical?'Rack asignado automáticamente':'Requiere Reserva o Colección'}</small></button><button type="button" className={mode==='pickup'?'selected':''} onClick={()=>setFulfillment({...fulfillment,[offer.id]:'pickup'})}><b>Comprar para recogido</b><small>No ocupa espacio de almacenamiento</small></button></div>}
-          <div className="shop-price"><strong>{money(total,lang)}</strong><span>Precio final · servicio incluido</span></div><div className="row between"><span className="badge">{left} disponible{left===1?'':'s'}</span><button className="btn" disabled={staffPreview||!age||left<1||busy!==null} onClick={async()=>{setBusy(offer.id);setMessage(null);const {data,error}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId:offer.id,quantity:1,acceptAge:age,fulfillment:mode}});if(error||data?.error){setMessage({type:'error',text:data?.error||error?.message||'No se pudo iniciar el pago.'});setBusy(null)}else window.location.href=data.approval_url}}>{staffPreview?'Vista previa':busy===offer.id?'Conectando…':mode==='storage'?'Comprar y guardar':'Comprar para recogido'}</button></div>
+        <div className="shop-copy"><small>{offer.offer_source==='member'?'Colección de miembro':'Inventario Divinos'}</small><h2>{wine?.name}</h2><p className="shop-origin">{[wine?.producer,wine?.region,wine?.country,wine?.vintage].filter(Boolean).join(' · ')}</p>
+          <div className="shop-price"><strong>{money(total,lang)}</strong><span>Precio final · servicio incluido</span></div>
+          {!activeMember&&<div className="member-price-note">Miembros: {money(memberPrice,lang)}</div>}
+          <div className="shop-buy-actions">{physical&&<button className="btn" disabled={staffPreview||!age||left<1||busy!==null} onClick={()=>checkout(offer.id,'storage')}>{busy===offer.id?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||!age||left<1||busy!==null} onClick={()=>checkout(offer.id,'pickup')}>{staffPreview?'Vista previa':busy===offer.id?'Conectando…':'Comprar para recoger'}</button></div>
+          <div className="shop-availability"><span>{left} disponible{left===1?'':'s'}</span>{physical&&<span>Se añade automáticamente a tu inventario</span>}</div>
         </div>
       </article>
     })}</div>}
-    <p className="muted small">La disponibilidad se reserva durante 20 minutos. El precio mostrado ya incluye el servicio; PayPal no añadirá otro cargo de servicio. Solo las compras con “Guardar en mi cava” entran al inventario y reciben rack, shelf y posición.</p>
+    <p className="muted small shop-legal">Precio final con servicio incluido. “Comprar y guardar” añade la botella automáticamente a tu inventario cuando PayPal confirma el pago.</p>
   </div>
 }
 
