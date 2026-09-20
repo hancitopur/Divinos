@@ -1,20 +1,12 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useT } from '../lib/i18n'
 import { labelUrl, uploadLabel } from '../lib/supabase'
-import { wineProductPhoto } from '../lib/productPhotos'
 
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
-  useEffect(() => {
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
-    window.addEventListener('keydown', closeOnEscape)
-    return () => { document.body.style.overflow = previous; window.removeEventListener('keydown', closeOnEscape) }
-  }, [onClose])
   return (
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-head"><h2>{title}</h2><button type="button" className="sheet-close" aria-label="Cerrar" onClick={onClose}>×</button></div>
+      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <h2>{title}</h2>
         {children}
       </div>
     </div>
@@ -25,18 +17,11 @@ export function Field({ label, children }: { label: string; children: ReactNode 
   return <div className="field"><label>{label}</label>{children}</div>
 }
 
-export function Thumb({ path, className = '', label = '' }: { path: string | null | undefined; className?: string; label?: string }) {
-  const [url, setUrl] = useState<string | null>(null)
-  useEffect(() => {
-    let active = true
-    labelUrl(path, className.includes('lg') ? 1000 : 200).then((next) => { if (active) setUrl(next) })
-    return () => { active = false }
-  }, [path, className])
+export function Thumb({ path, className = '' }: { path: string | null | undefined; className?: string }) {
+  const url = labelUrl(path, className.includes('lg') ? 1000 : 200)
   return url
     ? <img className={`thumb ${className}`} src={url} alt="" loading="lazy" />
-    : label
-      ? <img className={`thumb photo-fallback ${className}`} src={wineProductPhoto(label)} alt={`Botella de ${label}`} loading="lazy" />
-      : <img className={`thumb photo-fallback ${className}`} src={wineProductPhoto()} alt="Botella de vino" loading="lazy" />
+    : <div className={`thumb ${className}`}>▰</div>
 }
 
 /** Camera/upload button. Uploads immediately and calls onUploaded(path). */
@@ -72,5 +57,5 @@ export function Loading() { const { t } = useT(); return <p className="muted" st
 export function Loc({ rack, shelf, position }: { rack: string | null; shelf: number | null; position: number | null }) {
   const { t } = useT()
   if (!rack) return <span className="muted small">{t('noLocation')}</span>
-  return <span className="loc">{rack} · S{shelf} · P{position}</span>
+  return <span className="loc">{rack} · G{shelf} · E{position}</span>
 }
