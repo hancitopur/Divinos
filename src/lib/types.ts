@@ -1,26 +1,8 @@
-export type Role = 'superadmin' | 'admin' | 'member' | 'pending'
-export type MembershipPlan = 'digital' | 'reserva' | 'coleccion'
-export type MembershipStatus = 'pending' | 'approval_pending' | 'active' | 'suspended' | 'past_due' | 'cancelled' | 'expired'
+export type Role = 'admin' | 'staff'
 export type BottleStatus = 'in_storage' | 'sold' | 'consumed' | 'removed'
 export type WineType = 'red' | 'white' | 'rose' | 'sparkling' | 'dessert' | 'fortified' | 'other'
 
-export interface Profile { id: string; full_name: string | null; role: Role; terms_version?: string | null; terms_accepted_at?: string | null }
-
-export interface CustomerOnboarding {
-  user_id: string; legal_name: string; phone: string; address_line1: string; address_line2: string | null
-  city: string; region: string; postal_code: string; updated_at?: string
-}
-
-export interface Membership {
-  user_id: string; client_id: string; plan: MembershipPlan; status: MembershipStatus
-  bottle_limit: number | null; payment_provider: 'paypal'; paypal_subscription_id: string | null
-  current_period_end: string | null; activated_at: string | null
-}
-
-export interface IntakeRequest {
-  id: string; client_id: string; submitted_by: string; status: 'draft' | 'submitted' | 'reviewing' | 'accepted' | 'rejected'
-  notes: string | null; submitted_at: string | null; created_at: string
-}
+export interface Profile { id: string; full_name: string | null; role: Role }
 
 export interface Client {
   id: string; name: string; email: string | null; phone: string | null; notes: string | null; active: boolean
@@ -29,11 +11,13 @@ export interface Client {
 export interface Wine {
   id: string; name: string; producer: string | null; vintage: number | null; region: string | null
   country: string | null; varietal: string | null; type: WineType | null; size_ml: number
-  label_photo_path: string | null; bottle_photo_path: string | null; notes: string | null; barcode: string | null
-  label_source: 'camera_upload' | 'open_food_facts' | 'wikimedia_commons' | null; label_source_url: string | null
+  label_photo_path: string | null; notes: string | null
 }
 
-export interface Rack { id: string; name: string; description: string | null; shelves: number; positions_per_shelf: number }
+export interface Rack {
+  id: string; name: string; description: string | null; shelves: number; positions_per_shelf: number
+  current_humidity: number | null; current_temperature: number | null; last_environment_check: string | null
+}
 export interface Slot { id: string; rack_id: string; shelf: number; position: number }
 
 export interface Bottle {
