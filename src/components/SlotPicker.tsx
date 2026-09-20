@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useT } from '../lib/i18n'
-import { Field, Thumb } from './ui'
+import { Field } from './ui'
 import type { Rack, Slot } from '../lib/types'
 
 /**
  * Visual rack map. Occupied slots are wine-colored; the current bottle's slot is outlined in gold.
  * onPick(slotId) fires when the user taps a free slot (or the current one).
  */
-export function SlotPicker({ value, currentBottleId, onPick, readOnly, visual = false, onTapOccupied }: {
+export function SlotPicker({ value, currentBottleId, onPick, readOnly, onTapOccupied }: {
   value: string | null; currentBottleId?: string; onPick?: (slotId: string | null) => void
-  readOnly?: boolean; visual?: boolean; onTapOccupied?: (bottleId: string) => void
+  readOnly?: boolean; onTapOccupied?: (bottleId: string) => void
 }) {
   const { t } = useT()
   const [racks, setRacks] = useState<Rack[]>([])
   const [rackId, setRackId] = useState<string>('')
   const [slots, setSlots] = useState<Slot[]>([])
-  const [occ, setOcc] = useState<Record<string, { bottleId: string; label: string; wine: string; vintage: number | null; client: string; photo: string | null }>>({})
+  const [occ, setOcc] = useState<Record<string, { bottleId: string; label: string }>>({})
 
   useEffect(() => {
     supabase.from('racks').select('*').order('name').then(({ data }) => {
@@ -35,18 +35,11 @@ export function SlotPicker({ value, currentBottleId, onPick, readOnly, visual = 
     if (!rackId) return
     Promise.all([
       supabase.from('slots').select('*').eq('rack_id', rackId).order('shelf').order('position'),
-      supabase.from('bottle_details').select('id, slot_id, wine_name, vintage, client_name, label_photo_path').eq('rack_id', rackId).eq('status', 'in_storage'),
+      supabase.from('bottle_details').select('id, slot_id, wine_name, vintage, client_name').eq('rack_id', rackId).eq('status', 'in_storage'),
     ]).then(([s, b]) => {
       setSlots((s.data ?? []) as Slot[])
-      const m: Record<string, { bottleId: string; label: string; wine: string; vintage: number | null; client: string; photo: string | null }> = {}
-      for (const row of b.data ?? []) if (row.slot_id) m[row.slot_id] = {
-        bottleId: row.id,
-        label: `${row.wine_name}${row.vintage ? ' ' + row.vintage : ''} — ${row.client_name}`,
-        wine: row.wine_name,
-        vintage: row.vintage,
-        client: row.client_name,
-        photo: row.label_photo_path,
-      }
+      const m: Record<string, { bottleId: string; label: string }> = {}
+      for (const row of b.data ?? []) if (row.slot_id) m[row.slot_id] = { bottleId: row.id, label: `${row.wine_name}${row.vintage ? ' ' + row.vintage : ''} — ${row.client_name}` }
       setOcc(m)
     })
   }, [rackId])
@@ -69,39 +62,18 @@ export function SlotPicker({ value, currentBottleId, onPick, readOnly, visual = 
       </Field>
       {rackId && (
         <>
-          {visual ? <div className="cellar-summary">
-            <div><strong>{used}</strong><span> de {slots.length} {t('occupied')}</span></div>
-            <i><em style={{ width: `${slots.length ? Math.round((used / slots.length) * 100) : 0}%` }} /></i>
-            <small>{t('visualHint')}</small>
-          </div> : <div className="small muted">{used}/{slots.length} {t('occupied')} · {readOnly ? t('legend') : t('selectSlot')}</div>}
-          <div className={visual ? 'cellar-rack' : 'rackmap'}>
+          <div className="small muted">{used}/{slots.length} {t('occupied')} · {readOnly ? t('legend') : t('selectSlot')}</div>
+          <div className="rackmap">
             {byShelf.map(([shelf, ss]) => (
-              <div className={visual ? 'cellar-shelf' : 'shelfrow'} key={shelf}>
-                <div className={visual ? 'cellar-shelf-label' : 'shelflabel'}><span>S{shelf}</span></div>
-                <div className={visual ? 'cellar-slots' : 'slots'}>
+              <div className="shelfrow" key={shelf}>
+                <div className="shelflabel">G{shelf}</div>
+                <div className="slots">
                   {ss.map((s) => {
                     const o = occ[s.id]
                     const mine = o && o.bottleId === currentBottleId
                     const full = !!o && !mine
                     const sel = value === s.id
-                    return visual ? (
-                      <button type="button" key={s.id} title={o?.label ?? `${t('position')} ${s.position} · ${t('free')}`}
-                        aria-label={o?.label ?? `${t('availableSlot')} ${s.position}`}
-                        className={`cellar-slot ${o ? 'occupied' : 'available'} ${mine ? 'mine' : ''}`}
-                        onClick={() => {
-                          if (o && !mine) { onTapOccupied?.(o.bottleId); return }
-                          if (readOnly) return
-                          onPick?.(sel ? null : s.id)
-                        }}>
-                        <span className="cellar-position">{s.position}</span>
-                        {o ? (
-                          <>
-                            <span className="cellar-bottle-photo"><Thumb path={o.photo} label={`${o.wine} ${o.vintage ?? ''}`} /></span>
-                            <span className="cellar-wine"><b>{o.wine}</b><small>{o.vintage ? `${o.vintage} · ` : ''}{o.client}</small></span>
-                          </>
-                        ) : <span className="cellar-free">+</span>}
-                      </button>
-                    ) : (
+                    return (
                       <button type="button" key={s.id} title={o?.label ?? `${t('position')} ${s.position} · ${t('free')}`}
                         className={`slot ${full ? 'full' : ''} ${mine ? 'mine' : ''} ${sel ? 'sel' : ''}`}
                         onClick={() => {
