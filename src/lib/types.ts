@@ -40,3 +40,12 @@ export interface ClientValue {
 export interface StorageSummary {
   bottles_in_storage: number; purchase_value: number; sale_value: number; total_slots: number; used_slots: number
 }
+
+export type SaleStatus = 'completed' | 'voided'
+export interface Sale {
+  id: string; client_id: string | null; sold_by: string; status: SaleStatus
+  subtotal: number; tax: number; total: number; payment_method: string; notes: string | null; created_at: string
+}
+export interface SaleItem {
+  id: string; sale_id: string; bottle_id: string; description: string; unit_price: number; quantity: number; line_total: number
+}
