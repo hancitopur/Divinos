@@ -16,8 +16,12 @@ import { ResetPassword } from './pages/ResetPassword'
 import { AccountPending } from './pages/AccountPending'
 import { AdminAccounts, AdminWineSales, ClientAccount, ClientCollection, ClientIntake, ClientOverview, ClientProductDetail, ClientSell, ClientShop } from './pages/ClientPortal'
 import { AdminIntakes } from './pages/AdminIntakes'
+import { AdminReleases } from './pages/AdminReleases'
+import { ClientRelease } from './pages/ClientRelease'
+import { AdminMovements, ClientMovements } from './pages/Movements'
 import { Brand } from './components/Brand'
 import { Loading } from './components/ui'
+import './release.css'
 
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
 const icons = {
@@ -38,10 +42,10 @@ function ClientShell() {
     { to: '/', label: 'Mi cava', icon: icons.home },
     { to: '/collection', label: 'Colección', icon: icons.bottle },
     { to: '/shop', label: 'Comprar', icon: icons.shop },
-    { to: '/intake', label: 'Solicitar', icon: icons.plus },
+    { to: '/movements', label: 'Movimientos', icon: icons.plus },
     { to: '/account', label: 'Cuenta', icon: icons.account },
   ]
-  return <div className="app client-app"><header className="topbar"><div className="brand"><Brand light /></div><div className="actions"><select value={lang} onChange={(e)=>setLang(e.target.value as any)} aria-label={t('language')}><option value="es">ES</option><option value="en">EN</option></select></div></header><main className="main client-main"><Routes><Route path="/" element={<ClientOverview/>}/><Route path="/collection" element={<ClientCollection/>}/><Route path="/shop" element={<ClientShop/>}/><Route path="/shop/:offerId" element={<ClientProductDetail/>}/><Route path="/sell" element={<ClientSell/>}/><Route path="/intake" element={<ClientIntake/>}/><Route path="/account" element={<ClientAccount/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes></main><nav className="tabbar client-tabbar">{tabs.map((tb)=><NavLink key={tb.to} to={tb.to} end={tb.to==='/' } className={({isActive})=>isActive?'active':''}><Icon d={tb.icon}/>{tb.label}</NavLink>)}</nav></div>
+  return <div className="app client-app"><header className="topbar"><div className="brand"><Brand light /></div><div className="actions"><select value={lang} onChange={(e)=>setLang(e.target.value as any)} aria-label={t('language')}><option value="es">ES</option><option value="en">EN</option></select></div></header><main className="main client-main"><Routes><Route path="/" element={<ClientOverview/>}/><Route path="/collection" element={<ClientCollection/>}/><Route path="/shop" element={<ClientShop/>}/><Route path="/shop/:offerId" element={<ClientProductDetail/>}/><Route path="/sell" element={<ClientSell/>}/><Route path="/movements" element={<ClientMovements/>}/><Route path="/intake" element={<ClientIntake/>}/><Route path="/release" element={<ClientRelease/>}/><Route path="/account" element={<ClientAccount/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes></main><nav className="tabbar client-tabbar">{tabs.map((tb)=><NavLink key={tb.to} to={tb.to} end={tb.to==='/' } className={({isActive})=>isActive?'active':''}><Icon d={tb.icon}/>{tb.label}</NavLink>)}</nav></div>
 }
 
 function Shell() {
@@ -87,7 +91,7 @@ function Shell() {
     { to: '/wines', label: t('wines'), icon: icons.wine },
     { to: '/racks', label: t('racks'), icon: icons.rack },
     { to: '/clients', label: t('clients'), icon: icons.people },
-    { to: '/intakes', label: 'Entradas', icon: icons.inbox },
+    { to: '/movements', label: 'Movimientos', icon: icons.inbox },
   ]
 
   return (
@@ -114,6 +118,8 @@ function Shell() {
           <Route path="/racks" element={<Racks />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/intakes" element={<AdminIntakes />} />
+          <Route path="/releases" element={<AdminReleases />} />
+          <Route path="/movements" element={<AdminMovements />} />
           <Route path="/shop" element={<ClientShop />} />
           <Route path="/shop/:offerId" element={<ClientProductDetail />} />
           <Route path="/sales-inventory" element={<AdminWineSales />} />
