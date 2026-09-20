@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase, configured } from '../lib/supabase'
 import { useT } from '../lib/i18n'
 import { Field } from '../components/ui'
@@ -9,6 +9,7 @@ import { TERMS_VERSION } from './Terms'
 export function Login() {
   const { t, lang, setLang } = useT()
   const [params] = useSearchParams()
+  const navigate = useNavigate()
   const [mode, setMode] = useState<'in' | 'up'>(() => params.get('plan') ? 'up' : 'in')
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [name, setName] = useState('')
   const [err, setErr] = useState<string | null>(null); const [msg, setMsg] = useState<string | null>(null); const [busy, setBusy] = useState(false)
@@ -19,6 +20,7 @@ export function Login() {
     try {
       if (mode === 'in') {
         const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) throw error
+        navigate(params.get('next') === '/shop' ? '/shop' : '/')
       } else {
         if (!accepted) throw new Error('Debes aceptar los términos para crear la cuenta.')
         const plan = params.get('plan')
@@ -36,6 +38,7 @@ export function Login() {
     <div className="auth">
       <form className="card stack" onSubmit={submit}>
         <Brand className="auth-brand" />
+        {params.get('next') === '/shop' && <div className="info"><b>Tienda de vinos</b><br/>Entra o crea tu cuenta para ver precios y comprar.</div>}
         {!configured && <div className="error">{t('notConfigured')}</div>}
         {mode === 'up' && <Field label={t('fullName')}><input value={name} onChange={(e) => setName(e.target.value)} required /></Field>}
         <Field label={t('email')}><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></Field>

@@ -66,6 +66,7 @@ function Shell() {
       <Route path="/demo" element={<Demo />} />
       <Route path="/sales" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/shop" element={<Navigate to="/login?next=/shop" replace />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/" element={<Landing />} />

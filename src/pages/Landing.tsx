@@ -29,6 +29,7 @@ export function Landing() {
         <nav aria-label="Navegación principal">
           <Jump to="como-funciona">Cómo funciona</Jump>
           <Jump to="planes">Planes</Jump>
+          <Link to="/shop">Tienda de vinos</Link>
           <Link className="landing-signin" to="/login">Entrar</Link>
         </nav>
       </header>
@@ -41,7 +42,7 @@ export function Landing() {
             <p>Guardamos tu colección en condiciones controladas. Tú la ves y la encuentras desde el teléfono.</p>
             <div className="hero-actions">
               <Jump className="btn landing-btn" to="planes">Reservar mi espacio</Jump>
-              <Link className="btn landing-btn secondary" to="/demo">Ver demo</Link>
+              <Link className="btn landing-btn secondary" to="/shop">Comprar vinos</Link>
             </div>
           </div>
           <figure className="cellar-photo"><img src="/divinos-cellar-hero.webp" alt="Colección organizada en una cava de vinos con acceso desde el teléfono" /><figcaption><b>Tu cava en el teléfono</b><span>Inventario, ubicación y valor en un solo lugar.</span></figcaption></figure>
@@ -81,8 +82,8 @@ export function Landing() {
         </section>
       </main>
 
-      <footer className="landing-footer"><Brand /><span>© 2026 Divinos · Puerto Rico</span><Link to="/login">Acceso de clientes</Link></footer>
-      <div className="mobile-buybar"><span>Organiza tu cava</span><Jump className="btn" to="planes">Ver planes</Jump></div>
+      <footer className="landing-footer"><Brand /><span>© 2026 Divinos · Puerto Rico</span><Link to="/shop">Tienda de vinos</Link><Link to="/login">Acceso de clientes</Link></footer>
+      <div className="mobile-buybar"><span>Vinos disponibles</span><Link className="btn" to="/shop">Ver tienda</Link></div>
     </div>
   )
 }
