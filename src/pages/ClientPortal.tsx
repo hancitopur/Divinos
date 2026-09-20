@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Empty, Field, Loading, PhotoPicker, Thumb } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { money, useT } from '../lib/i18n'
@@ -131,12 +131,12 @@ export function ClientShop() {
       const basePrice=Number(offer.price),memberPrice=Math.round(basePrice*107.5)/100,regularPrice=Math.round(basePrice*1.15*107.5)/100,total=activeMember?memberPrice:regularPrice
       const photo=storePhoto(wine?.name)
       return <article className={offer.featured?'featured':''} key={offer.id}>
-        <div className="shop-gallery">
+        <Link className="shop-gallery" to={`/shop/${offer.id}`} aria-label={`Ver ${wine?.name||'vino'}`}>
           <div className="shop-bottle-view">{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine?.name}/>:photo?<img src={photo} alt={`Botella de ${wine?.name||'vino'}`}/>:<div className="shop-bottle-fallback"><i/><span>{wine?.producer||'DIVINOS'}</span></div>}</div>
           <div className="shop-label-view">{wine?.label_photo_path?<Thumb path={wine.label_photo_path} label={`${wine?.name||'Vino'} ${wine?.vintage||''}`} />:photo?<img src={photo} alt={`Etiqueta de ${wine?.name||'vino'}`}/>:null}<small>Ver etiqueta</small></div>
           {offer.featured&&<span>Selección Divinos</span>}
-        </div>
-        <div className="shop-copy"><small>{offer.offer_source==='member'?'Colección de miembro':'Inventario Divinos'}</small><h2>{wine?.name}</h2><p className="shop-origin">{[wine?.producer,wine?.region,wine?.country,wine?.vintage].filter(Boolean).join(' · ')}</p>
+        </Link>
+        <div className="shop-copy"><small>{offer.offer_source==='member'?'Colección de miembro':'Inventario Divinos'}</small><h2><Link to={`/shop/${offer.id}`}>{wine?.name}</Link></h2><p className="shop-origin">{[wine?.producer,wine?.region,wine?.country,wine?.vintage].filter(Boolean).join(' · ')}</p>
           <div className="shop-price"><strong>{money(total,lang)}</strong><span>Precio final · servicio incluido</span></div>
           {!activeMember&&<div className="member-price-note">Miembros: {money(memberPrice,lang)}</div>}
           <div className="shop-buy-actions">{physical&&<button className="btn" disabled={staffPreview||!age||left<1||busy!==null} onClick={()=>checkout(offer.id,'storage')}>{busy===offer.id?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||!age||left<1||busy!==null} onClick={()=>checkout(offer.id,'pickup')}>{staffPreview?'Vista previa':busy===offer.id?'Conectando…':'Comprar para recoger'}</button></div>
@@ -145,6 +145,32 @@ export function ClientShop() {
       </article>
     })}</div>}
     <p className="muted small shop-legal">Precio final con servicio incluido. “Comprar y guardar” añade la botella automáticamente a tu inventario cuando PayPal confirma el pago.</p>
+  </div>
+}
+
+export function ClientProductDetail() {
+  const { offerId }=useParams(); const { membership,profile }=useAuth(); const { lang }=useT()
+  const [offer,setOffer]=useState<any|null>(null); const [related,setRelated]=useState<any[]>([]); const [reviews,setReviews]=useState<any[]>([])
+  const [age,setAge]=useState(false); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null)
+  const activeMember=membership?.status==='active',physical=activeMember&&(membership?.plan==='reserva'||membership?.plan==='coleccion'),staffPreview=profile?.role==='admin'||profile?.role==='superadmin'
+  useEffect(()=>{if(!offerId)return;(async()=>{const {data}=await supabase.from('wine_sale_offers').select('*, wines(*)').eq('id',offerId).eq('active',true).maybeSingle();setOffer(data);if(!data)return;const wine=Array.isArray(data.wines)?data.wines[0]:data.wines;const [{data:r},{data:rel}]=await Promise.all([supabase.from('wine_reviews').select('*').eq('wine_id',wine.id).order('created_at',{ascending:false}).limit(3),supabase.from('wine_sale_offers').select('*, wines(*)').eq('active',true).neq('id',data.id).order('featured',{ascending:false}).limit(3)]);setReviews(r??[]);setRelated(rel??[])})()},[offerId])
+  if(!offer)return <Loading/>
+  const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines,photo=storePhoto(wine?.name),left=offer.quantity_available-offer.quantity_reserved-offer.quantity_sold
+  const base=Number(offer.price),memberPrice=Math.round(base*107.5)/100,regularPrice=Math.round(base*1.15*107.5)/100,total=activeMember?memberPrice:regularPrice
+  const checkout=async(mode:'storage'|'pickup')=>{setBusy(true);setError(null);const {data,error:e}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId:offer.id,quantity:1,acceptAge:age,fulfillment:mode}});if(e||data?.error){setError(data?.error||e?.message||'No se pudo iniciar el pago.');setBusy(false)}else window.location.href=data.approval_url}
+  return <div className="product-detail client-page">
+    <Link className="product-back" to="/shop">← Volver a la tienda</Link>
+    <section className="product-main">
+      <div className="product-photo">{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine.name}/>:<img src={photo} alt={`Botella de ${wine?.name}`}/>}<div className="product-label-zoom">{wine?.label_photo_path?<Thumb path={wine.label_photo_path} label={`Etiqueta de ${wine.name}`}/>:<img src={photo} alt={`Etiqueta de ${wine?.name}`}/>}</div></div>
+      <div className="product-buy"><span className="landing-kicker">{offer.offer_source==='member'?'Colección de miembro':'Selección Divinos'}</span><h1>{wine?.name}</h1><p className="product-origin">{[wine?.producer,wine?.region,wine?.country,wine?.vintage].filter(Boolean).join(' · ')}</p><p>{String(offer.description||'').replace(/^\[DEMO\]\s*/,'')}</p>
+        <div className="product-price"><strong>{money(total,lang)}</strong><span>Precio final · servicio incluido</span></div>{!activeMember&&<p className="member-price-note">Precio miembro: {money(memberPrice,lang)}</p>}
+        {!staffPreview&&<label className="terms-check product-age"><input type="checkbox" checked={age} onChange={e=>setAge(e.target.checked)}/> Confirmo que tengo 18 años o más.</label>}
+        <div className="product-actions">{physical&&<button className="btn" disabled={!age||busy||left<1} onClick={()=>checkout('storage')}>{busy?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||!age||busy||left<1} onClick={()=>checkout('pickup')}>{staffPreview?'Vista previa':busy?'Conectando…':'Comprar para recoger'}</button></div>
+        {physical&&<div className="product-storage-note">✓ Al pagar, se añade a tu inventario y queda pendiente de ubicación.</div>}{error&&<div className="error">{error}</div>}<span className="badge">{left} disponible{left===1?'':'s'}</span>
+      </div>
+    </section>
+    <section className="product-section"><div className="row between"><h2>Reseñas recientes</h2><span className="small muted">Últimas {reviews.length}</span></div><div className="review-grid">{reviews.map(review=><article key={review.id}><div className="review-head"><b>{review.reviewer_name}</b><span>{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</span></div><p>{review.review_text}</p>{review.is_demo&&<small>Reseña de demostración</small>}</article>)}</div></section>
+    <section className="product-section"><h2>También te puede gustar</h2><div className="related-grid">{related.map(item=>{const w=Array.isArray(item.wines)?item.wines[0]:item.wines,p=storePhoto(w?.name),price=activeMember?Math.round(Number(item.price)*107.5)/100:Math.round(Number(item.price)*1.15*107.5)/100;return <Link to={`/shop/${item.id}`} key={item.id}><img src={p} alt={w?.name}/><div><b>{w?.name}</b><small>{[w?.region,w?.country].filter(Boolean).join(' · ')}</small><strong>{money(price,lang)}</strong></div></Link>})}</div></section>
   </div>
 }
 
