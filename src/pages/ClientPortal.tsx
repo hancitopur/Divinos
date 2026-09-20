@@ -221,13 +221,6 @@ export function AdminWineSales() {
   </div>
 }
 
-export function AdminIntakes() {
-  const [requests,setRequests]=useState<any[]|null>(null)
-  const load=()=>supabase.from('intake_requests').select('*, clients(name), intake_items(*)').order('created_at',{ascending:false}).then(({data})=>setRequests(data??[]))
-  useEffect(()=>{load()},[])
-  return <div className="stack"><div><span className="landing-kicker">Recepción</span><h1>Entradas de clientes</h1></div>{requests===null?<Loading/>:requests.length===0?<Empty/>:<div className="list">{requests.map((r)=><div className="card stack" key={r.id}><div className="row between"><div><b>{r.clients?.name}</b><div className="muted small">{new Date(r.created_at).toLocaleString('es-PR')}</div></div><span className="badge">{r.status}</span></div>{r.intake_items?.map((item:any)=><div className="row" key={item.id}><Thumb path={item.label_photo_path} label={`${item.name} ${item.vintage||''}`}/><div><b>{item.name} {item.vintage||''}</b><div className="muted small">{item.quantity} botella(s) · {item.region||'Sin región'}</div></div></div>)}<div className="row"><button className="btn secondary" onClick={async()=>{await supabase.from('intake_requests').update({status:'reviewing'}).eq('id',r.id);load()}}>Revisando</button><button className="btn" onClick={async()=>{await supabase.from('intake_requests').update({status:'accepted',reviewed_at:new Date().toISOString()}).eq('id',r.id);load()}}>Aceptar entrada</button></div></div>)}</div>}</div>
-}
-
 export function AdminAccounts() {
   const [rows,setRows]=useState<any[]|null>(null)
   const [paypal,setPaypal]=useState<{ready:boolean;mode?:string;updated_at?:string|null}|null>(null)
