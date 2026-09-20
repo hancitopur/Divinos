@@ -10,7 +10,8 @@ export function Login() {
   const { t, lang, setLang } = useT()
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const [mode, setMode] = useState<'in' | 'up'>(() => params.get('plan') ? 'up' : 'in')
+  const next = params.get('next'); const safeNext = next?.startsWith('/') ? next : '/'
+  const [mode, setMode] = useState<'in' | 'up'>(() => params.get('plan') || next?.startsWith('/shop') ? 'up' : 'in')
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [name, setName] = useState('')
   const [err, setErr] = useState<string | null>(null); const [msg, setMsg] = useState<string | null>(null); const [busy, setBusy] = useState(false)
   const [accepted, setAccepted] = useState(false)
@@ -20,16 +21,16 @@ export function Login() {
     try {
       if (mode === 'in') {
         const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) throw error
-        navigate(params.get('next') === '/shop' ? '/shop' : '/')
+        navigate(safeNext)
       } else {
         if (!accepted) throw new Error('Debes aceptar los términos para crear la cuenta.')
         const plan = params.get('plan')
         const { data, error } = await supabase.auth.signUp({ email, password, options: {
           data: { full_name: name, terms_accepted: true, terms_version: TERMS_VERSION },
-          emailRedirectTo: `${window.location.origin}/#/login${plan ? `?plan=${plan}` : ''}`,
+          emailRedirectTo: `${window.location.origin}/#/login?${new URLSearchParams({...plan?{plan}:{},...safeNext!=='/'?{next:safeNext}:{}}).toString()}`,
         } })
         if (error) throw error
-        if (!data.session) setMsg(t('checkEmail'))
+        if (data.session) navigate(safeNext); else setMsg(`${t('checkEmail')} Luego regresarás al producto seleccionado.`)
       }
     } catch (ex: any) { setErr(ex.message) } finally { setBusy(false) }
   }
@@ -38,7 +39,7 @@ export function Login() {
     <div className="auth">
       <form className="card stack" onSubmit={submit}>
         <Brand className="auth-brand" />
-        {params.get('next') === '/shop' && <div className="info"><b>Tienda de vinos</b><br/>Entra o crea tu cuenta para ver precios y comprar.</div>}
+        {next?.startsWith('/shop') && <div className="info"><b>Completa tu compra</b><br/>Crea tu cuenta para continuar con la botella que seleccionaste.</div>}
         {!configured && <div className="error">{t('notConfigured')}</div>}
         {mode === 'up' && <Field label={t('fullName')}><input value={name} onChange={(e) => setName(e.target.value)} required /></Field>}
         <Field label={t('email')}><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></Field>

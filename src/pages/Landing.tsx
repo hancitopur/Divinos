@@ -29,7 +29,7 @@ export function Landing() {
         <nav aria-label="Navegación principal">
           <Jump to="como-funciona">Cómo funciona</Jump>
           <Jump to="planes">Planes</Jump>
-          <Link to="/shop">Tienda de vinos</Link>
+          <Link className="store-nav-cta" to="/shop">Comprar vinos</Link>
           <Link className="landing-signin" to="/login">Entrar</Link>
         </nav>
       </header>
@@ -42,7 +42,7 @@ export function Landing() {
             <p>Guardamos tu colección en condiciones controladas. Tú la ves y la encuentras desde el teléfono.</p>
             <div className="hero-actions">
               <Jump className="btn landing-btn" to="planes">Reservar mi espacio</Jump>
-              <Link className="btn landing-btn secondary" to="/shop">Comprar vinos</Link>
+              <Link className="btn landing-btn store-hero-cta" to="/shop"><span>Comprar vinos</span><small>Entra sin registrarte</small></Link>
             </div>
           </div>
           <figure className="cellar-photo"><img src="/divinos-cellar-hero.webp" alt="Colección organizada en una cava de vinos con acceso desde el teléfono" /><figcaption><b>Tu cava en el teléfono</b><span>Inventario, ubicación y valor en un solo lugar.</span></figcaption></figure>

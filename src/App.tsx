@@ -1,4 +1,4 @@
-import { HashRouter, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { AuthProvider, useAuth } from './lib/auth'
 import { I18nProvider, useT } from './lib/i18n'
@@ -62,17 +62,17 @@ function Shell() {
   if (location.pathname === '/reset-password') return <ResetPassword />
   if (loading) return <div className="auth"><Loading /></div>
   if (!session) return (
-    <Routes>
-      <Route path="/demo" element={<Demo />} />
-      <Route path="/sales" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/shop" element={<Navigate to="/login?next=/shop" replace />} />
-      <Route path="/shop/:offerId" element={<Navigate to="/login?next=/shop" replace />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/" element={<Landing />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    location.pathname.startsWith('/shop')
+      ? <div className="app client-app public-shop-app"><header className="topbar"><Link className="brand" to="/"><Brand light /></Link><Link className="public-shop-login" to={`/login?next=${encodeURIComponent(location.pathname)}`}>Entrar</Link></header><main className="main client-main"><Routes><Route path="/shop" element={<ClientShop/>}/><Route path="/shop/:offerId" element={<ClientProductDetail/>}/></Routes></main></div>
+      : <Routes>
+        <Route path="/demo" element={<Demo />} />
+        <Route path="/sales" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
   )
 
   const paidMember = profile?.role === 'member' && membership?.status === 'active'

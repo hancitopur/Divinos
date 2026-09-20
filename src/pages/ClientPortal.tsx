@@ -115,7 +115,7 @@ export function ClientAccount() {
 }
 
 export function ClientShop() {
-  const { membership,profile }=useAuth(); const { lang }=useT(); const [params]=useSearchParams()
+  const { session,membership,profile }=useAuth(); const { lang }=useT(); const [params]=useSearchParams()
   const [offers,setOffers]=useState<any[]|null>(null); const [age,setAge]=useState(false); const [busy,setBusy]=useState<string|null>(null)
   const [message,setMessage]=useState<{type:'ok'|'error';text:string}|null>(null)
   const [zoom,setZoom]=useState<{path?:string|null;photo?:string;name:string}|null>(null)
@@ -134,12 +134,12 @@ export function ClientShop() {
   const staffPreview=profile?.role==='admin'||profile?.role==='superadmin'
   const activeMember=membership?.status==='active'
   const physical=activeMember&&(membership?.plan==='reserva'||membership?.plan==='coleccion')
-  const checkout=async(offerId:string,mode:'storage'|'pickup')=>{setBusy(offerId);setMessage(null);const {data,error}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId,quantity:1,acceptAge:age,fulfillment:mode}});if(error||data?.error){setMessage({type:'error',text:data?.error||error?.message||'No se pudo iniciar el pago.'});setBusy(null)}else window.location.href=data.approval_url}
+  const checkout=async(offerId:string,mode:'storage'|'pickup')=>{if(!session){window.location.hash=`#/login?next=${encodeURIComponent(`/shop/${offerId}`)}`;return}setBusy(offerId);setMessage(null);const {data,error}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId,quantity:1,acceptAge:age,fulfillment:mode}});if(error||data?.error){setMessage({type:'error',text:data?.error||error?.message||'No se pudo iniciar el pago.'});setBusy(null)}else window.location.href=data.approval_url}
   return <div className="stack client-page private-shop">
     <div className="shop-hero"><span className="landing-kicker">Tienda Divinos</span><h1>Compra. Guarda. Disfruta.</h1><p>Elige tu botella y envíala directo a tu cava.</p>{activeMember&&!staffPreview&&<Link className="btn secondary" to="/sell">Vender de mi colección</Link>}</div>
     {message&&<div className={message.type==='ok'?'info':'error'}>{message.text}</div>}
-    <div className="shop-status">{staffPreview?'Vista administrativa · compra desactivada':activeMember?'✓ Precio de miembro activo':'Precio regular · recogido disponible'}</div>
-    {!staffPreview&&<label className="terms-check shop-age"><input type="checkbox" checked={age} onChange={(e)=>setAge(e.target.checked)} /> Confirmo que tengo 18 años o más.</label>}
+    <div className="shop-status">{staffPreview?'Vista administrativa · compra desactivada':activeMember?'✓ Precio de miembro activo':session?'Precio regular · recogido disponible':'Explora sin registro · crea tu cuenta solamente al comprar'}</div>
+    {session&&!staffPreview&&<label className="terms-check shop-age"><input type="checkbox" checked={age} onChange={(e)=>setAge(e.target.checked)} /> Confirmo que tengo 18 años o más.</label>}
     {offers===null?<Loading/>:offers.length===0?<div className="client-success"><span>◌</span><h2>Próximamente</h2><p>Las nuevas llegadas aparecerán aquí primero para los miembros de Divinos.</p></div>:<div className="shop-grid">{offers.map((offer)=>{
       const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines; const left=offer.quantity_available-offer.quantity_reserved-offer.quantity_sold
       const basePrice=Number(offer.price),memberPrice=Math.round(basePrice*107.5)/100,regularPrice=Math.round(basePrice*1.15*107.5)/100,total=activeMember?memberPrice:regularPrice
@@ -154,7 +154,7 @@ export function ClientShop() {
           <div className="shop-price"><strong>{money(total,lang)}</strong><span>Precio final · servicio incluido</span></div>
           {!activeMember&&<div className="member-price-note">Miembros: {money(memberPrice,lang)}</div>}
           <Link className="product-detail-link" to={`/shop/${offer.id}`}>Ver detalles y reseñas →</Link>
-          <div className="shop-buy-actions">{physical&&<button className="btn" disabled={staffPreview||!age||left<1||busy!==null} onClick={()=>checkout(offer.id,'storage')}>{busy===offer.id?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||!age||left<1||busy!==null} onClick={()=>checkout(offer.id,'pickup')}>{staffPreview?'Vista previa':busy===offer.id?'Conectando…':'Comprar para recoger'}</button></div>
+          <div className="shop-buy-actions">{physical&&<button className="btn" disabled={staffPreview||!age||left<1||busy!==null} onClick={()=>checkout(offer.id,'storage')}>{busy===offer.id?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||(!!session&&!age)||left<1||busy!==null} onClick={()=>checkout(offer.id,'pickup')}>{staffPreview?'Vista previa':!session?'Comprar':busy===offer.id?'Conectando…':'Comprar para recoger'}</button></div>
           <div className="shop-availability"><span>{left} disponible{left===1?'':'s'}</span>{physical&&<span>Se añade automáticamente a tu inventario</span>}</div>
         </div>
       </article>
@@ -164,7 +164,7 @@ export function ClientShop() {
 }
 
 export function ClientProductDetail() {
-  const { offerId }=useParams(); const { membership,profile }=useAuth(); const { lang }=useT()
+  const { offerId }=useParams(); const { session,membership,profile }=useAuth(); const { lang }=useT()
   const [offer,setOffer]=useState<any|null>(null); const [loading,setLoading]=useState(true); const [related,setRelated]=useState<any[]>([]); const [reviews,setReviews]=useState<any[]>([]); const [zoom,setZoom]=useState(false)
   const [age,setAge]=useState(false); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null)
   const activeMember=membership?.status==='active',physical=activeMember&&(membership?.plan==='reserva'||membership?.plan==='coleccion'),staffPreview=profile?.role==='admin'||profile?.role==='superadmin'
@@ -173,15 +173,16 @@ export function ClientProductDetail() {
   if(!offer)return <div className="client-page product-missing"><h1>Producto no disponible</h1><p>{error||'La botella ya no está activa en la tienda.'}</p><Link className="btn" to="/shop">Volver a la tienda</Link></div>
   const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines,photo=storePhoto(wine?.name),left=offer.quantity_available-offer.quantity_reserved-offer.quantity_sold
   const base=Number(offer.price),memberPrice=Math.round(base*107.5)/100,regularPrice=Math.round(base*1.15*107.5)/100,total=activeMember?memberPrice:regularPrice
-  const checkout=async(mode:'storage'|'pickup')=>{setBusy(true);setError(null);const {data,error:e}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId:offer.id,quantity:1,acceptAge:age,fulfillment:mode}});if(e||data?.error){setError(data?.error||e?.message||'No se pudo iniciar el pago.');setBusy(false)}else window.location.href=data.approval_url}
+  const checkout=async(mode:'storage'|'pickup')=>{if(!session){window.location.hash=`#/login?next=${encodeURIComponent(`/shop/${offer.id}`)}`;return}setBusy(true);setError(null);const {data,error:e}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId:offer.id,quantity:1,acceptAge:age,fulfillment:mode}});if(e||data?.error){setError(data?.error||e?.message||'No se pudo iniciar el pago.');setBusy(false)}else window.location.href=data.approval_url}
   return <div className="product-detail client-page">
     <Link className="product-back" to="/shop">← Volver a la tienda</Link>
     <section className="product-main">
       <div className="product-photo">{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine.name}/>:<img src={photo} alt={`Botella de ${wine?.name}`}/>}<button type="button" className="product-label-zoom" aria-label={`Ampliar etiqueta de ${wine?.name}`} onClick={()=>setZoom(true)}>{wine?.label_photo_path?<Thumb path={wine.label_photo_path} label={`Etiqueta de ${wine.name}`}/>:<img src={photo} alt={`Etiqueta de ${wine?.name}`}/>}<span>Ampliar</span></button></div>
       <div className="product-buy"><span className="landing-kicker">{offer.offer_source==='member'?'Colección de miembro':'Selección Divinos'}</span><h1>{wine?.name}</h1><p className="product-origin">{[wine?.producer,wine?.region,wine?.country,wine?.vintage].filter(Boolean).join(' · ')}</p><p>{String(offer.description||'').replace(/^\[DEMO\]\s*/,'')}</p>
         <div className="product-price"><strong>{money(total,lang)}</strong><span>Precio final · servicio incluido</span></div>{!activeMember&&<p className="member-price-note">Precio miembro: {money(memberPrice,lang)}</p>}
-        {!staffPreview&&<label className="terms-check product-age"><input type="checkbox" checked={age} onChange={e=>setAge(e.target.checked)}/> Confirmo que tengo 18 años o más.</label>}
-        <div className="product-actions">{physical&&<button className="btn" disabled={!age||busy||left<1} onClick={()=>checkout('storage')}>{busy?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||!age||busy||left<1} onClick={()=>checkout('pickup')}>{staffPreview?'Vista previa':busy?'Conectando…':'Comprar para recoger'}</button></div>
+        {session&&!staffPreview&&<label className="terms-check product-age"><input type="checkbox" checked={age} onChange={e=>setAge(e.target.checked)}/> Confirmo que tengo 18 años o más.</label>}
+        {!session&&<div className="public-checkout-note">No necesitas cuenta para mirar. Te pediremos crearla cuando continúes la compra.</div>}
+        <div className="product-actions">{physical&&<button className="btn" disabled={!age||busy||left<1} onClick={()=>checkout('storage')}>{busy?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||(!!session&&!age)||busy||left<1} onClick={()=>checkout('pickup')}>{staffPreview?'Vista previa':!session?'Comprar ahora':busy?'Conectando…':'Comprar para recoger'}</button></div>
         {physical&&<div className="product-storage-note">✓ Al pagar, se añade a tu inventario y queda pendiente de ubicación.</div>}{error&&<div className="error">{error}</div>}<span className="badge">{left} disponible{left===1?'':'s'}</span>
       </div>
     </section>
