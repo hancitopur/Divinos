@@ -9,9 +9,9 @@ const features = [
 ]
 
 const storagePlans = [
-  { name: 'Digital', capacity: 'Tu propia cava', price: '9', note: 'Inventario y aplicación' },
-  { name: 'Reserva', capacity: 'Hasta 72 botellas', price: '49', note: '6 cajas almacenadas', featured: true },
-  { name: 'Colección', capacity: 'Hasta 144 botellas', price: '79', note: '12 cajas almacenadas' },
+  { name: 'Digital', capacity: 'Tu propia cava', price: '9', total: '9.68', note: 'Inventario y aplicación' },
+  { name: 'Reserva', capacity: 'Hasta 72 botellas', price: '49', total: '52.68', note: '6 cajas almacenadas', featured: true },
+  { name: 'Colección', capacity: 'Hasta 144 botellas', price: '79', total: '84.93', note: '12 cajas almacenadas' },
 ]
 
 function PayLink({ plan, children, secondary = false }: { plan: string; children: string; secondary?: boolean }) {
@@ -76,6 +76,7 @@ export function Landing() {
                 {plan.featured && <span className="popular">Más elegido</span>}
                 <span className="plan-label">{plan.name}</span>
                 <strong><sup>$</sup>{plan.price}<small>/mes</small></strong>
+                <span className="plan-total">Total con servicio: ${plan.total}/mes</span>
                 <h3>{plan.capacity}</h3><p>{plan.note}</p>
                 <PayLink plan={plan.name.toLowerCase()} secondary={plan.name !== 'Digital'}>{plan.name === 'Digital' ? 'Activar app' : 'Reservar'}</PayLink>
               </article>

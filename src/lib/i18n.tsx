@@ -61,7 +61,9 @@ const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: (k: Key) 
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
-    try { return (localStorage.getItem('lang') as Lang) || (navigator.language.startsWith('en') ? 'en' : 'es') } catch { return 'es' }
+    // Divinos launches in Puerto Rico: start in Spanish unless the customer
+    // has explicitly selected and saved another language.
+    try { return (localStorage.getItem('lang') as Lang) || 'es' } catch { return 'es' }
   })
   const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem('lang', l) } catch {} }
   const t = (k: Key) => dict[lang][k] ?? dict.es[k] ?? k

@@ -296,6 +296,8 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .pricing-line strong sup { font-size: 1.1rem; vertical-align: top; position: relative; top: .25rem; margin-right: 2px; }
 .pricing-line strong small { font: 600 .78rem/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--muted); letter-spacing: 0; }
 .pricing-line .featured strong small, .pricing-line .featured p { color: rgba(255,255,255,.62); }
+.pricing-line .plan-total { margin: -1px 0 10px; color: var(--wine); font-size: .72rem; font-weight: 750; }
+.pricing-line .featured .plan-total { color: var(--gold); }
 .pricing-line h3 { margin: 9px 0 2px; font-size: 1rem; }
 .pricing-line p { margin: 0 0 24px; color: var(--muted); font-size: .8rem; }
 .pricing-line .landing-btn { width: 100%; margin-top: auto; border-radius: 12px; }

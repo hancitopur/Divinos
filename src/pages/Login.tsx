@@ -43,7 +43,7 @@ export function Login() {
         {mode === 'up' && <label className="terms-check"><input type="checkbox" checked={accepted} onChange={(e)=>setAccepted(e.target.checked)} required /> Leí y acepto el <Link to="/terms" target="_blank">acuerdo legal y los términos y condiciones</Link>. Antes del pago completaré mis datos y aceptaré el cargo del plan seleccionado.</label>}
         {err && <div className="error">{err}</div>}
         {msg && <div className="info">{msg}</div>}
-        <button className="btn" disabled={busy || !configured}>{mode === 'in' ? t('signIn') : t('signUp')}</button>
+        <button className="btn" disabled={busy || !configured || (mode === 'up' && !accepted)}>{mode === 'in' ? t('signIn') : t('signUp')}</button>
         <button type="button" className="btn secondary" onClick={() => setMode(mode === 'in' ? 'up' : 'in')}>
           {mode === 'in' ? `${t('noAccount')} ${t('signUp')}` : `${t('haveAccount')} ${t('signIn')}`}
         </button>
