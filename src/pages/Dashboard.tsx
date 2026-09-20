@@ -36,7 +36,7 @@ export function Dashboard() {
       </div>
       <div className="card">
         <h3 style={{ marginBottom: 8 }}>{t('valueByClient')}</h3>
-        <div className="table-scroll"><table className="table">
+        <table className="table">
           <thead><tr><th>{t('client')}</th><th className="num">#</th><th className="num">{t('purchaseValue')}</th><th className="num">{t('saleValue')}</th></tr></thead>
           <tbody>
             {clients.filter((c) => c.bottles_in_storage > 0).map((c) => (
@@ -48,7 +48,7 @@ export function Dashboard() {
               </tr>
             ))}
           </tbody>
-        </table></div>
+        </table>
       </div>
     </div>
   )
