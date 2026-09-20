@@ -110,9 +110,8 @@ export function ClientAccount() {
 
 export function ClientShop() {
   const { session,membership,profile }=useAuth(); const { lang }=useT(); const [params]=useSearchParams()
-  const [offers,setOffers]=useState<any[]|null>(null); const [age,setAge]=useState(false); const [busy,setBusy]=useState<string|null>(null)
+  const [offers,setOffers]=useState<any[]|null>(null); const [busy,setBusy]=useState<string|null>(null)
   const [message,setMessage]=useState<{type:'ok'|'error';text:string}|null>(null)
-  const [zoom,setZoom]=useState<{path?:string|null;photo?:string;name:string}|null>(null)
   const load=()=>supabase.from('wine_sale_offers').select('*, wines(*)').eq('active',true).order('featured',{ascending:false}).order('member_release_at',{ascending:false}).then(({data})=>setOffers(data??[]))
   useEffect(()=>{load()},[])
   useEffect(()=>{
@@ -127,33 +126,23 @@ export function ClientShop() {
   },[])
   const staffPreview=profile?.role==='admin'||profile?.role==='superadmin'
   const activeMember=membership?.status==='active'
-  const physical=activeMember&&(membership?.plan==='reserva'||membership?.plan==='coleccion')
-  const checkout=async(offerId:string,mode:'storage'|'pickup')=>{if(!session){window.location.hash=`#/login?next=${encodeURIComponent(`/shop/${offerId}`)}`;return}setBusy(offerId);setMessage(null);const {data,error}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId,quantity:1,acceptAge:age,fulfillment:mode}});if(error||data?.error){setMessage({type:'error',text:data?.error||error?.message||'No se pudo iniciar el pago.'});setBusy(null)}else window.location.href=data.approval_url}
-  return <div className="stack client-page private-shop">
-    <div className="shop-hero"><span className="landing-kicker">Tienda Divinos</span><h1>Compra. Guarda. Disfruta.</h1><p>Elige tu botella y envíala directo a tu cava.</p>{activeMember&&!staffPreview&&<Link className="btn secondary" to="/sell">Vender de mi colección</Link>}</div>
+  return <div className="stack client-page simple-shop">
+    <div className="shop-simple-head"><span className="landing-kicker">Tienda Divinos</span><h1>Vinos seleccionados</h1><p>Compra para recoger o guardar directamente en tu cava.</p></div>
     {message&&<div className={message.type==='ok'?'info':'error'}>{message.text}</div>}
-    <div className="shop-status">{staffPreview?'Vista administrativa · compra desactivada':activeMember?'✓ Precio de miembro activo':session?'Precio regular · recogido disponible':'Explora sin registro · crea tu cuenta solamente al comprar'}</div>
-    {session&&!staffPreview&&<label className="terms-check shop-age"><input type="checkbox" checked={age} onChange={(e)=>setAge(e.target.checked)} /> Confirmo que tengo 18 años o más.</label>}
+    <div className="shop-toolbar"><span>{staffPreview?'Vista administrativa':activeMember?'✓ Precio de miembro':session?'Recogido disponible':'Mira sin registrarte'}</span>{activeMember&&!staffPreview&&<Link to="/sell">Vender una botella</Link>}</div>
     {offers===null?<Loading/>:offers.length===0?<div className="client-success"><span>◌</span><h2>Próximamente</h2><p>Las nuevas llegadas aparecerán aquí primero para los miembros de Divinos.</p></div>:<div className="shop-grid">{offers.map((offer)=>{
       const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines; const left=offer.quantity_available-offer.quantity_reserved-offer.quantity_sold
       const basePrice=Number(offer.price),memberPrice=Math.round(basePrice*107.5)/100,regularPrice=Math.round(basePrice*1.15*107.5)/100,total=activeMember?memberPrice:regularPrice
       const photo=storePhoto(wine?.name)
       return <article className={offer.featured?'featured':''} key={offer.id}>
-        <div className="shop-gallery">
-          <Link className="shop-bottle-view" to={`/shop/${offer.id}`} aria-label={`Ver detalles de ${wine?.name||'vino'}`}>{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine?.name}/>:<img src={photo} alt={`Botella de ${wine?.name||'vino'}`}/>}</Link>
-          <button type="button" className="shop-label-view" aria-label={`Ampliar etiqueta de ${wine?.name||'vino'}`} onClick={()=>setZoom({path:wine?.label_photo_path,photo,name:wine?.name||'vino'})}>{wine?.label_photo_path?<Thumb path={wine.label_photo_path} label={`${wine?.name||'Vino'} ${wine?.vintage||''}`} />:photo?<img src={photo} alt={`Etiqueta de ${wine?.name||'vino'}`}/>:null}<small>Ampliar etiqueta</small></button>
-          {offer.featured&&<span>Selección Divinos</span>}
-        </div>
-        <div className="shop-copy"><small>{offer.offer_source==='member'?'Colección de miembro':'Inventario Divinos'}</small><h2><Link to={`/shop/${offer.id}`}>{wine?.name}</Link></h2><p className="shop-origin">{[wine?.producer,wine?.region,wine?.country,wine?.vintage].filter(Boolean).join(' · ')}</p>
-          <div className="shop-price"><strong>{money(total,lang)}</strong><span>Precio final · servicio incluido</span></div>
-          {!activeMember&&<div className="member-price-note">Miembros: {money(memberPrice,lang)}</div>}
-          <Link className="product-detail-link" to={`/shop/${offer.id}`}>Ver detalles y reseñas →</Link>
-          <div className="shop-buy-actions">{physical&&<button className="btn" disabled={staffPreview||!age||left<1||busy!==null} onClick={()=>checkout(offer.id,'storage')}>{busy===offer.id?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||(!!session&&!age)||left<1||busy!==null} onClick={()=>checkout(offer.id,'pickup')}>{staffPreview?'Vista previa':!session?'Comprar':busy===offer.id?'Conectando…':'Comprar para recoger'}</button></div>
-          <div className="shop-availability"><span>{left} disponible{left===1?'':'s'}</span>{physical&&<span>Se añade automáticamente a tu inventario</span>}</div>
+        <Link className="shop-simple-photo" to={`/shop/${offer.id}`} aria-label={`Ver ${wine?.name||'vino'}`}>{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine?.name}/>:<img src={photo} alt={`Botella de ${wine?.name||'vino'}`} />}{offer.featured&&<span>Selección Divinos</span>}</Link>
+        <div className="shop-copy"><small>{offer.offer_source==='member'?'Colección de miembro':[wine?.region,wine?.country].filter(Boolean).join(' · ')||'Inventario Divinos'}</small><h2><Link to={`/shop/${offer.id}`}>{wine?.name}</Link></h2><p className="shop-origin">{[wine?.producer,wine?.vintage].filter(Boolean).join(' · ')}</p>
+          <div className="shop-simple-bottom"><div className="shop-price"><strong>{money(total,lang)}</strong><span>Precio final</span></div><span className="shop-stock">{left} disponible{left===1?'':'s'}</span></div>
+          <Link className="btn shop-view-button" to={`/shop/${offer.id}`}>{staffPreview?'Ver producto':'Ver y comprar'}</Link>
         </div>
       </article>
     })}</div>}
-    <p className="muted small shop-legal">Precio final con servicio incluido. “Comprar y guardar” añade la botella automáticamente a tu inventario cuando PayPal confirma el pago.</p>{zoom&&<LabelLightbox {...zoom} onClose={()=>setZoom(null)}/>} 
+    <p className="muted small shop-legal">El precio mostrado ya incluye el servicio. La confirmación de edad y la opción de guardar aparecen al comprar.</p>
   </div>
 }
 
