@@ -37,8 +37,7 @@ Deno.serve(async(req)=>{
     const paypalResponse=await fetch(`${api}/v2/checkout/orders`,{
       method:'POST',headers:{Authorization:`Bearer ${access_token}`,'Content-Type':'application/json','PayPal-Request-Id':`wine-${order.id}`},
       body:JSON.stringify({intent:'CAPTURE',purchase_units:[{reference_id:order.id,custom_id:order.id,invoice_id:`DIV-${order.id}`,
-        description:`${wine?.name||'Vino'} ${wine?.vintage||''} · ${fulfillment==='storage'?'Guardar en cava':'Recogido'}`.trim(),amount:{currency_code:'USD',value:Number(order.total).toFixed(2),breakdown:{item_total:{currency_code:'USD',value:Number(order.subtotal).toFixed(2)},handling:{currency_code:'USD',value:Number(order.service_fee_amount).toFixed(2)}}},
-        items:[{name:`${wine?.name||'Vino'} ${wine?.vintage||''}`.trim().slice(0,127),description:String(wine?.producer||offer.description||'Divinos').slice(0,127),unit_amount:{currency_code:'USD',value:Number(order.unit_price).toFixed(2)},quantity:String(order.quantity),category:'PHYSICAL_GOODS'}]}],
+        description:`${wine?.name||'Vino'} ${wine?.vintage||''} · ${fulfillment==='storage'?'Guardar en cava':'Recogido'}`.trim(),amount:{currency_code:'USD',value:Number(order.total).toFixed(2)}}],
         application_context:{brand_name:'Divinos',locale:'es-PR',user_action:'PAY_NOW',shipping_preference:'NO_SHIPPING',return_url:`${site}/?wine_order=${order.id}#/shop?paypal=return`,cancel_url:`${site}/?wine_order=${order.id}#/shop?paypal=cancelled`}})
     })
     const paypal=await paypalResponse.json()
