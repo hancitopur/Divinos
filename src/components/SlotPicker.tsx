@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useT } from '../lib/i18n'
-import { Field } from './ui'
+import { Field, Thumb } from './ui'
 import type { Rack, Slot } from '../lib/types'
 
 /**
@@ -16,7 +16,7 @@ export function SlotPicker({ value, currentBottleId, onPick, readOnly, visual = 
   const [racks, setRacks] = useState<Rack[]>([])
   const [rackId, setRackId] = useState<string>('')
   const [slots, setSlots] = useState<Slot[]>([])
-  const [occ, setOcc] = useState<Record<string, { bottleId: string; label: string; wine: string; vintage: number | null; client: string }>>({})
+  const [occ, setOcc] = useState<Record<string, { bottleId: string; label: string; wine: string; vintage: number | null; client: string; photo: string | null }>>({})
 
   useEffect(() => {
     supabase.from('racks').select('*').order('name').then(({ data }) => {
@@ -35,16 +35,17 @@ export function SlotPicker({ value, currentBottleId, onPick, readOnly, visual = 
     if (!rackId) return
     Promise.all([
       supabase.from('slots').select('*').eq('rack_id', rackId).order('shelf').order('position'),
-      supabase.from('bottle_details').select('id, slot_id, wine_name, vintage, client_name').eq('rack_id', rackId).eq('status', 'in_storage'),
+      supabase.from('bottle_details').select('id, slot_id, wine_name, vintage, client_name, label_photo_path').eq('rack_id', rackId).eq('status', 'in_storage'),
     ]).then(([s, b]) => {
       setSlots((s.data ?? []) as Slot[])
-      const m: Record<string, { bottleId: string; label: string; wine: string; vintage: number | null; client: string }> = {}
+      const m: Record<string, { bottleId: string; label: string; wine: string; vintage: number | null; client: string; photo: string | null }> = {}
       for (const row of b.data ?? []) if (row.slot_id) m[row.slot_id] = {
         bottleId: row.id,
         label: `${row.wine_name}${row.vintage ? ' ' + row.vintage : ''} — ${row.client_name}`,
         wine: row.wine_name,
         vintage: row.vintage,
         client: row.client_name,
+        photo: row.label_photo_path,
       }
       setOcc(m)
     })
@@ -91,7 +92,7 @@ export function SlotPicker({ value, currentBottleId, onPick, readOnly, visual = 
                         <span className="cellar-position">{s.position}</span>
                         {o ? (
                           <>
-                            <span className="cellar-bottle" aria-hidden="true"><i /><em>{o.vintage ?? 'DV'}</em></span>
+                            <span className="cellar-bottle-photo"><Thumb path={o.photo} label={`${o.wine} ${o.vintage ?? ''}`} /></span>
                             <span className="cellar-wine"><b>{o.wine}</b><small>{o.vintage ? `${o.vintage} · ` : ''}{o.client}</small></span>
                           </>
                         ) : <span className="cellar-free">+</span>}

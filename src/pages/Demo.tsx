@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
+import { wineProductPhoto } from '../lib/productPhotos'
 
 const clients = [
   { name: 'Familia Rivera', bottles: 84, value: '$18,640', change: '+6 este mes' },
@@ -8,30 +9,24 @@ const clients = [
 ]
 
 const activity = [
-  ['Château Margaux 2018', 'Rack A · S3 · P08', 'Recibida'],
+  ['Artemis Cabernet Sauvignon 2021', 'Rack A · S3 · P08', 'Recibida'],
   ['Opus One 2019', 'Rack B · S1 · P04', 'Movida'],
-  ['Vega Sicilia Único 2014', 'Rack A · S5 · P11', 'Entregada'],
+  ['Tignanello 2020', 'Rack A · S5 · P11', 'Entregada'],
 ]
 
 const inventory = [
-  { name: 'Château Margaux', vintage: '2018', origin: 'Margaux, Francia', price: '$1,195', location: 'A · S3 · P08', tone: 'ivory' },
-  { name: 'Opus One', vintage: '2019', origin: 'Napa Valley, USA', price: '$425', location: 'B · S1 · P04', tone: 'night' },
-  { name: 'Vega Sicilia Único', vintage: '2014', origin: 'Ribera del Duero, España', price: '$495', location: 'A · S5 · P11', tone: 'cream' },
-  { name: 'Sassicaia', vintage: '2020', origin: 'Toscana, Italia', price: '$319', location: 'C · S2 · P06', tone: 'blue' },
-  { name: 'Dom Pérignon', vintage: '2013', origin: 'Champagne, Francia', price: '$289', location: 'D · S1 · P02', tone: 'shield' },
-  { name: 'Almaviva', vintage: '2020', origin: 'Maipo, Chile', price: '$175', location: 'B · S4 · P09', tone: 'gold' },
+  { name: 'Artemis Cabernet Sauvignon', vintage: '2021', origin: 'Napa Valley, USA', price: '$95', location: 'A · S3 · P08' },
+  { name: 'Opus One', vintage: '2019', origin: 'Napa Valley, USA', price: '$425', location: 'B · S1 · P04' },
+  { name: 'Tignanello', vintage: '2020', origin: 'Toscana, Italia', price: '$219', location: 'A · S5 · P11' },
+  { name: 'Gran Reserva 904', vintage: '2015', origin: 'Rioja, España', price: '$89', location: 'C · S2 · P06' },
+  { name: 'Dom Pérignon Vintage', vintage: '2013', origin: 'Champagne, Francia', price: '$289', location: 'D · S1 · P02' },
+  { name: 'Erdener Prälat Riesling', vintage: '2020', origin: 'Mosel, Alemania', price: '$145', location: 'B · S4 · P09' },
 ]
 
-function LabelArtwork({ wine, compact = false }: { wine: typeof inventory[number]; compact?: boolean }) {
+function BottlePhoto({ wine, compact = false }: { wine: typeof inventory[number]; compact?: boolean }) {
   return (
-    <div className={`label-art label-art-${wine.tone} ${compact ? 'compact' : ''}`} role="img" aria-label={`Etiqueta ilustrada de ${wine.name} ${wine.vintage}`}>
-      <span className="label-neck" />
-      <div className="label-paper">
-        <small>DIVINOS SELECTION</small>
-        <strong>{wine.name}</strong>
-        <i>{wine.vintage}</i>
-        <em>{wine.origin.split(',')[0]}</em>
-      </div>
+    <div className={`demo-wine-photo ${compact ? 'compact' : ''}`}>
+      <img src={wineProductPhoto(`${wine.name} ${wine.vintage}`)} alt={`Botella de ${wine.name} ${wine.vintage}`} loading="lazy" />
     </div>
   )
 }
@@ -76,7 +71,7 @@ export function Demo() {
           <div className="demo-wine-grid">
             {inventory.map((wine) => (
               <article className="demo-wine" key={`${wine.name}-${wine.vintage}`}>
-                <LabelArtwork wine={wine} />
+                <BottlePhoto wine={wine} />
                 <div className="demo-wine-info">
                   <small>{wine.origin}</small>
                   <h3>{wine.name} <span>{wine.vintage}</span></h3>
@@ -89,7 +84,7 @@ export function Demo() {
 
         <section className="demo-shop-preview">
           <div className="demo-section-head"><div><span className="demo-kicker">Nuevo · acceso anticipado</span><h2>Compra y vende dentro de Divinos</h2><p>Encuentra nuevas llegadas de Divinos o botellas verificadas de otros miembros. Cada venta entre miembros requiere aprobación antes de publicarse.</p></div><Link className="btn" to="/login?plan=reserva">Quiero acceso</Link></div>
-          <div className="demo-shop-grid">{inventory.slice(3,5).map((wine,index)=><article key={wine.name}><LabelArtwork wine={wine}/><div><small>{index===0?'INVENTARIO DIVINOS':'COLECCIÓN DE MIEMBRO'} · {wine.origin}</small><h3>{wine.name} {wine.vintage}</h3><p>{index===0?'12 botellas disponibles':'1 botella verificada'}</p><strong>{index===0?'$342.93':'$310.68'} <small>con servicio</small></strong><span>{index===0?'Compra → inventario → rack asignado':'Miembro solicita → Divinos aprueba → se publica'}</span></div></article>)}</div>
+          <div className="demo-shop-grid">{inventory.slice(3,5).map((wine,index)=><article key={wine.name}><BottlePhoto wine={wine}/><div><small>{index===0?'INVENTARIO DIVINOS':'COLECCIÓN DE MIEMBRO'} · {wine.origin}</small><h3>{wine.name} {wine.vintage}</h3><p>{index===0?'12 botellas disponibles':'1 botella verificada'}</p><strong>{index===0?'$342.93':'$310.68'} <small>con servicio</small></strong><span>{index===0?'Compra → inventario → rack asignado':'Miembro solicita → Divinos aprueba → se publica'}</span></div></article>)}</div>
         </section>
 
         <section className="demo-intake">
@@ -110,7 +105,7 @@ export function Demo() {
               <small className="demo-kicker">Botella 1 de 6</small>
               <h3>Añadir a mi colección</h3>
               <div className="intake-photo">
-                <LabelArtwork wine={inventory[2]} compact />
+                <BottlePhoto wine={inventory[2]} compact />
                 <div><b>Etiqueta encontrada</b><span>Datos completados automáticamente</span><button type="button">Cambiar foto</button></div>
               </div>
               <label>Vino<input readOnly value="Vega Sicilia Único" /></label>
@@ -149,7 +144,7 @@ export function Demo() {
           <div className="demo-activity">
             {activity.map(([wine, location, action]) => (
               <div className="demo-activity-row" key={wine}>
-                <LabelArtwork wine={inventory.find((item) => wine.startsWith(item.name)) ?? inventory[0]} compact /><div><strong>{wine}</strong><small>{location}</small></div><span className="badge">{action}</span>
+                <BottlePhoto wine={inventory.find((item) => wine.startsWith(item.name)) ?? inventory[0]} compact /><div><strong>{wine}</strong><small>{location}</small></div><span className="badge">{action}</span>
               </div>
             ))}
           </div>

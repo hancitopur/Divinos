@@ -6,16 +6,10 @@ import { money, useT } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
 import type { BottleDetail, IntakeRequest, Membership, StorageSummary, WineType } from '../lib/types'
 import { importWineImage, searchWineImages, type WineImageResult } from '../lib/wineImages'
+import { wineProductPhoto } from '../lib/productPhotos'
 
 const planName = (plan?: string) => ({ digital: 'Digital', reserva: 'Reserva', coleccion: 'Colección' }[plan || ''] || 'Divinos')
-const storePhoto = (name='') => {
-  const key=name.toLowerCase()
-  if(key.includes('artemis')) return '/wine-products/artemis-2021.webp'
-  if(key.includes('tignanello')) return '/wine-products/tignanello-2020.webp'
-  if(key.includes('gran reserva 904')) return '/wine-products/gran-reserva-904-2015.webp'
-  if(key.includes('erdener')) return '/wine-products/erdener-pralat-2020.webp'
-  return ''
-}
+const storePhoto = wineProductPhoto
 
 function LabelLightbox({ path, photo, name, onClose }: { path?: string | null; photo?: string; name: string; onClose: () => void }) {
   useEffect(() => {
@@ -146,7 +140,7 @@ export function ClientShop() {
       const photo=storePhoto(wine?.name)
       return <article className={offer.featured?'featured':''} key={offer.id}>
         <div className="shop-gallery">
-          <Link className="shop-bottle-view" to={`/shop/${offer.id}`} aria-label={`Ver detalles de ${wine?.name||'vino'}`}>{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine?.name}/>:photo?<img src={photo} alt={`Botella de ${wine?.name||'vino'}`}/>:<div className="shop-bottle-fallback"><i/><span>{wine?.producer||'DIVINOS'}</span></div>}</Link>
+          <Link className="shop-bottle-view" to={`/shop/${offer.id}`} aria-label={`Ver detalles de ${wine?.name||'vino'}`}>{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine?.name}/>:<img src={photo} alt={`Botella de ${wine?.name||'vino'}`}/>}</Link>
           <button type="button" className="shop-label-view" aria-label={`Ampliar etiqueta de ${wine?.name||'vino'}`} onClick={()=>setZoom({path:wine?.label_photo_path,photo,name:wine?.name||'vino'})}>{wine?.label_photo_path?<Thumb path={wine.label_photo_path} label={`${wine?.name||'Vino'} ${wine?.vintage||''}`} />:photo?<img src={photo} alt={`Etiqueta de ${wine?.name||'vino'}`}/>:null}<small>Ampliar etiqueta</small></button>
           {offer.featured&&<span>Selección Divinos</span>}
         </div>

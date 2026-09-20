@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useT } from '../lib/i18n'
 import { labelUrl, uploadLabel } from '../lib/supabase'
+import { wineProductPhoto } from '../lib/productPhotos'
 
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   useEffect(() => {
@@ -34,8 +35,8 @@ export function Thumb({ path, className = '', label = '' }: { path: string | nul
   return url
     ? <img className={`thumb ${className}`} src={url} alt="" loading="lazy" />
     : label
-      ? <div className={`thumb wine-fallback tone-${[...label].reduce((a,c)=>a+c.charCodeAt(0),0)%5} ${className}`} role="img" aria-label={`Etiqueta ilustrada de ${label}`}><span><small>DIVINOS</small><b>{label}</b></span></div>
-      : <div className={`thumb ${className}`}>🍷</div>
+      ? <img className={`thumb photo-fallback ${className}`} src={wineProductPhoto(label)} alt={`Botella de ${label}`} loading="lazy" />
+      : <img className={`thumb photo-fallback ${className}`} src={wineProductPhoto()} alt="Botella de vino" loading="lazy" />
 }
 
 /** Camera/upload button. Uploads immediately and calls onUploaded(path). */
