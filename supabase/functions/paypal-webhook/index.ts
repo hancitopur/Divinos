@@ -8,6 +8,7 @@ Deno.serve(async (req) => {
   const raw = await req.text()
   let event: any
   try { event = JSON.parse(raw) } catch { return reply({ error: 'JSON inválido' }, 400) }
+  if (!event?.id || !event?.event_type) return reply({ error: 'Evento incompleto' }, 400)
   try {
     const clientId = Deno.env.get('PAYPAL_CLIENT_ID')
     const clientSecret = Deno.env.get('PAYPAL_CLIENT_SECRET')
@@ -26,9 +27,16 @@ Deno.serve(async (req) => {
     if (!verification.ok || verified.verification_status !== 'SUCCESS') return reply({ error: 'Firma inválida' }, 401)
 
     const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
-    const { data: seen } = await admin.from('payment_events').select('id').eq('id', event.id).maybeSingle()
-    if (seen) return reply({ received: true, duplicate: true })
-    await admin.from('payment_events').insert({ id:event.id, event_type:event.event_type, resource_id:event.resource?.id })
+    const { data: seen, error: seenError } = await admin.from('payment_events').select('id,status').eq('id', event.id).maybeSingle()
+    if (seenError) throw seenError
+    if (seen && ['processed','ignored'].includes(seen.status)) return reply({ received: true, duplicate: true })
+    if (!seen) {
+      const { error: insertError } = await admin.from('payment_events').insert({ id:event.id, event_type:event.event_type, resource_id:event.resource?.id })
+      if (insertError) throw insertError
+    } else {
+      const { error: retryError } = await admin.from('payment_events').update({ status:'received', error_message:null, processed_at:null }).eq('id',event.id)
+      if (retryError) throw retryError
+    }
 
     const subscriptionId = event.resource?.billing_agreement_id || event.resource?.id
     const userId = event.resource?.custom_id
@@ -45,7 +53,8 @@ Deno.serve(async (req) => {
         const { data: onboarding } = agreement ? await admin.from('customer_onboarding').select('legal_name,phone,address_line1,city,region,postal_code').eq('user_id', agreement.user_id).maybeSingle() : { data: null }
         const complete = onboarding && ['legal_name','phone','address_line1','city','region','postal_code'].every((field) => String((onboarding as any)[field] || '').trim())
         if (!agreement || !complete) {
-          await admin.from('payment_events').update({ status:'manual_review', processed_at:new Date().toISOString() }).eq('id',event.id)
+          const { error: reviewError } = await admin.from('payment_events').update({ status:'manual_review', processed_at:new Date().toISOString(), error_message:'Falta acuerdo o información completa del cliente.' }).eq('id',event.id)
+          if (reviewError) throw reviewError
           return reply({ received:true, activated:false })
         }
       }
@@ -56,9 +65,15 @@ Deno.serve(async (req) => {
       if (error) throw error
       if (membership?.user_id) await admin.from('profiles').update({ role: status === 'active' ? 'member' : 'pending' }).eq('id', membership.user_id).neq('role','superadmin').neq('role','admin')
     }
-    await admin.from('payment_events').update({ status:status?'processed':'ignored', processed_at:new Date().toISOString() }).eq('id',event.id)
+    const { error: processedError } = await admin.from('payment_events').update({ status:status?'processed':'ignored', processed_at:new Date().toISOString(), error_message:null }).eq('id',event.id)
+    if (processedError) throw processedError
     return reply({ received: true })
   } catch (error) {
-    return reply({ error:error instanceof Error?error.message:'Error inesperado' },500)
+    const message = error instanceof Error ? error.message : 'Error inesperado'
+    try {
+      const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+      await admin.from('payment_events').update({ status:'failed', error_message:message, processed_at:new Date().toISOString() }).eq('id',event.id)
+    } catch { /* PayPal will retry the original request. */ }
+    return reply({ error:message },500)
   }
 })
