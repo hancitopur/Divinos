@@ -7,7 +7,7 @@ const cors = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
-const prices = { digital: '9.68', reserva: '52.68', coleccion: '84.93' } as const
+const prices = { digital: '24.99', reserva: '120.00', coleccion: '175.00' } as const
 
 async function paypalJson(api: string, token: string, path: string, init: RequestInit = {}) {
   const response = await fetch(`${api}${path}`, {

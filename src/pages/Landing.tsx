@@ -8,9 +8,9 @@ const features = [
 ]
 
 const storagePlans = [
-  { name: 'Digital', capacity: 'Tu propia cava', total: '9.68', note: 'Inventario y aplicación' },
-  { name: 'Reserva', capacity: 'Hasta 72 botellas', total: '52.68', note: '6 cajas almacenadas', featured: true },
-  { name: 'Colección', capacity: 'Hasta 144 botellas', total: '84.93', note: '12 cajas almacenadas' },
+  { name: 'Digital', capacity: 'Tu propia cava', total: '24.99', note: 'Inventario y aplicación' },
+  { name: 'Reserva', capacity: 'Hasta 72 botellas', total: '120', note: '6 cajas almacenadas', featured: true },
+  { name: 'Colección', capacity: 'Hasta 144 botellas', total: '175', note: '12 cajas almacenadas' },
 ]
 
 function PayLink({ plan, children, secondary = false }: { plan: string; children: string; secondary?: boolean }) {

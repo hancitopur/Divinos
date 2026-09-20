@@ -5,13 +5,12 @@ import { Field } from '../components/ui'
 import { supabase } from '../lib/supabase'
 import type { CustomerOnboarding, Membership, MembershipPlan } from '../lib/types'
 
-const plans: Array<{ id: MembershipPlan; name: string; price: number; detail: string }> = [
-  { id: 'digital', name: 'Digital', price: 9, detail: 'Inventario digital para tu propia cava' },
-  { id: 'reserva', name: 'Reserva', price: 49, detail: 'Aplicación + hasta 72 botellas' },
-  { id: 'coleccion', name: 'Colección', price: 79, detail: 'Aplicación + hasta 144 botellas' },
+const plans: Array<{ id: MembershipPlan; name: string; totalCents: number; detail: string }> = [
+  { id: 'digital', name: 'Digital', totalCents: 2499, detail: 'Inventario digital para tu propia cava' },
+  { id: 'reserva', name: 'Reserva', totalCents: 12000, detail: 'Aplicación + hasta 72 botellas' },
+  { id: 'coleccion', name: 'Colección', totalCents: 17500, detail: 'Aplicación + hasta 144 botellas' },
 ]
 
-const SERVICE_FEE_RATE = 0.075
 const money = (cents: number) => `$${(cents / 100).toFixed(2)}`
 
 type Details = Omit<CustomerOnboarding, 'user_id' | 'updated_at'>
@@ -27,9 +26,7 @@ export function AccountPending({ membership }: { membership: Membership | null }
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null)
   const status = membership?.status
   const plan = plans.find((item) => item.id === selected)!
-  const baseCents = plan.price * 100
-  const feeCents = Math.round(baseCents * SERVICE_FEE_RATE)
-  const totalCents = baseCents + feeCents
+  const totalCents = plan.totalCents
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -84,7 +81,7 @@ export function AccountPending({ membership }: { membership: Membership | null }
           <div className="pending-step"><b>2</b><span><strong>Selecciona tu servicio</strong><small>Las funciones de la cuenta son iguales; cambia la capacidad contratada.</small></span></div>
           <div className="pending-plans">
             {plans.map((item) => <button type="button" className={selected === item.id ? 'selected' : ''} key={item.id} onClick={() => setSelected(item.id)}>
-              <span><b>{item.name}</b><small>{item.detail}</small></span><strong>${item.price}<small>/mes</small></strong>
+              <span><b>{item.name}</b><small>{item.detail}</small></span><strong>{money(item.totalCents)}<small>/mes</small></strong>
             </button>)}
           </div>
         </section>
@@ -92,8 +89,8 @@ export function AccountPending({ membership }: { membership: Membership | null }
         <section className="pending-section pending-consent">
           <div className="pending-step"><b>3</b><span><strong>Acuerdo y cargos</strong><small>Ambas aceptaciones son obligatorias antes de PayPal.</small></span></div>
           <label className="terms-check"><input type="checkbox" checked={acceptedLegal} onChange={(e)=>setAcceptedLegal(e.target.checked)} required /><span>Leí y acepto el <Link to="/terms" target="_blank">acuerdo legal y los términos y condiciones</Link>.</span></label>
-          <label className="terms-check"><input type="checkbox" checked={acceptedCharges} onChange={(e)=>setAcceptedCharges(e.target.checked)} required /><span>Autorizo el cargo recurrente total de <strong>{money(totalCents)}/mes</strong> mediante PayPal, compuesto por {money(baseCents)} del plan y {money(feeCents)} de cargo de servicio (7.5%), más impuestos aplicables.</span></label>
-          <div className="charge-summary"><span>Plan {plan.name}</span><strong>{money(baseCents)}</strong><span>Cargo de servicio · 7.5%</span><strong>{money(feeCents)}</strong><span className="charge-total">Total mensual</span><strong className="charge-total">{money(totalCents)} USD</strong><small>Renovación automática. Puedes cancelar desde PayPal.</small></div>
+          <label className="terms-check"><input type="checkbox" checked={acceptedCharges} onChange={(e)=>setAcceptedCharges(e.target.checked)} required /><span>Autorizo el cargo recurrente final de <strong>{money(totalCents)}/mes</strong> mediante PayPal, con el servicio incluido, más impuestos aplicables.</span></label>
+          <div className="charge-summary"><span>Plan {plan.name}</span><strong>{money(totalCents)}</strong><span className="charge-total">Total mensual</span><strong className="charge-total">{money(totalCents)} USD</strong><small>Precio final con servicio incluido. Renovación automática. Puedes cancelar desde PayPal.</small></div>
         </section>
 
         {error && <div className="error">{error}</div>}

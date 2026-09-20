@@ -9,8 +9,8 @@ const cors = {
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 const TERMS_VERSION = '2026-09-20-v4-draft'
-const BILLING_VERSION = '2026-09-20-v2-service-fee'
-const PLAN_BASE_CENTS: Record<string, number> = { digital: 900, reserva: 4900, coleccion: 7900 }
+const BILLING_VERSION = '2026-09-20-v3-final-prices'
+const PLAN_TOTAL_CENTS: Record<string, number> = { digital: 2499, reserva: 12000, coleccion: 17500 }
 const SERVICE_FEE_RATE = 0.075
 
 Deno.serve(async (req) => {
@@ -51,9 +51,9 @@ Deno.serve(async (req) => {
     })
     if (!tokenResponse.ok) return json({ error: 'PayPal rechazó las credenciales configuradas.' }, 502)
     const { access_token } = await tokenResponse.json()
-    const baseCents = PLAN_BASE_CENTS[plan!]
-    const feeCents = Math.round(baseCents * SERVICE_FEE_RATE)
-    const totalCents = baseCents + feeCents
+    const totalCents = PLAN_TOTAL_CENTS[plan!]
+    const baseCents = Math.round(totalCents / (1 + SERVICE_FEE_RATE))
+    const feeCents = totalCents - baseCents
     const configuredPlanResponse = await fetch(`${api}/v1/billing/plans/${planId}`, { headers: { Authorization: `Bearer ${access_token}` } })
     if (!configuredPlanResponse.ok) return json({ error: 'No se pudo validar el plan configurado en PayPal.' }, 502)
     const configuredPlan = await configuredPlanResponse.json()
