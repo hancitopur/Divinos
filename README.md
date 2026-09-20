@@ -1,10 +1,11 @@
-# Divinos · Wine Storage Inventory
+# CigarrosPR Humidor
 
-Inventario de storage de vinos para clientes. PWA (React + Vite) sobre Supabase, desplegada en Render.
+Inventario y custodia de cigarros para clientes. PWA bilingüe (React + Vite) sobre Supabase, lista para Render.
 
-- Botellas por cliente con precio de compra / venta y valor total (por cliente y global)
-- Ubicación exacta: rack → shelf → posición, con mapa visual del rack
-- Fotos de etiquetas (cámara del teléfono → Supabase Storage)
+- Cajas o cigarros por cliente con precio de compra / venta y valor total
+- Ubicación exacta: humidor → gaveta → espacio, con mapa visual
+- Humedad y temperatura por humidor con fecha de la última lectura
+- Fotos del producto y de cada entrada desde la cámara del teléfono
 - Historial de movimientos (auditoría automática)
 - Interfaz en español / inglés
 - Instalable como app en iPhone / Android (PWA)
@@ -31,7 +32,7 @@ No hay backend propio: la app habla directo con Supabase y la seguridad la hacen
    update public.profiles set role='admin'
    where id = (select id from auth.users order by created_at limit 1);
    ```
-   Los usuarios nuevos quedan en estado `pending` y no pueden leer ni modificar inventario hasta que un administrador les asigne `staff` o `admin`. Para una instalación cerrada, desactiva además "Enable sign ups" en Auth y crea usuarios desde el dashboard.
+   Si no quieres que cualquiera pueda registrarse, desactiva "Enable sign ups" en Auth y crea usuarios desde el dashboard.
 
 ## 2. Local
 
