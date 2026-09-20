@@ -577,6 +577,7 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .private-shop .shop-bottle-view { min-height:360px; overflow:hidden; }
 .private-shop .shop-bottle-view > img,.private-shop .shop-bottle-view > .thumb { width:100%; height:360px; display:block; object-fit:contain; border-radius:0; mix-blend-mode:multiply; }
 .private-shop .shop-label-view { position:absolute; right:12px; bottom:12px; width:112px; height:92px; overflow:hidden; border:3px solid #fff; border-radius:13px; background:#eee5d9; box-shadow:0 10px 26px rgba(45,22,28,.25); }
+.private-shop button.shop-label-view { padding:0; font:inherit; cursor:zoom-in; }
 .private-shop .shop-label-view > img,.private-shop .shop-label-view > .thumb { width:100%; height:100%; display:block; object-fit:cover; object-position:center 72%; border-radius:0; transform:scale(1.22); }
 .private-shop .shop-label-view small { position:absolute; left:0; right:0; bottom:0; padding:4px; color:#fff; background:rgba(63,15,28,.82); text-align:center; font-size:.52rem; }
 .private-shop .shop-copy { padding:20px; justify-content:center; }
@@ -590,8 +591,9 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .shop-availability { margin-top:10px; display:flex; flex-wrap:wrap; gap:5px 10px; color:var(--muted); font-size:.65rem; }
 .shop-availability span:first-child { color:var(--wine); font-weight:750; }
 .shop-legal { margin:4px 2px 0; }
-.private-shop a.shop-gallery { color:inherit; text-decoration:none; }
+.private-shop .shop-bottle-view { color:inherit; text-decoration:none; }
 .private-shop .shop-copy h2 a { color:inherit; }
+.product-detail-link { width:max-content; margin-top:7px; color:var(--wine); font-size:.72rem; font-weight:800; text-decoration:underline; text-underline-offset:3px; }
 
 /* Wine product detail */
 .product-detail { display:grid; gap:28px; }
@@ -600,7 +602,15 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .product-photo { position:relative; min-height:620px; display:grid; place-items:center; overflow:hidden; background:#f6f1ea; }
 .product-photo > img,.product-photo > .thumb { width:100%; height:620px; object-fit:contain; border-radius:0; mix-blend-mode:multiply; }
 .product-label-zoom { position:absolute; right:18px; bottom:18px; width:150px; height:126px; overflow:hidden; background:#eee5d9; border:4px solid #fff; border-radius:16px; box-shadow:0 15px 34px rgba(44,20,26,.28); }
+.product-label-zoom { padding:0; cursor:zoom-in; }
 .product-label-zoom img,.product-label-zoom .thumb { width:100%; height:100%; object-fit:cover; object-position:center 72%; border-radius:0; transform:scale(1.2); }
+.product-label-zoom span { position:absolute; left:0; right:0; bottom:0; padding:6px; color:#fff; background:rgba(63,15,28,.84); font-size:.62rem; font-weight:800; text-transform:uppercase; }
+.label-lightbox { position:fixed; z-index:10000; inset:0; padding:70px 18px 28px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; background:rgba(18,7,10,.93); backdrop-filter:blur(9px); }
+.label-lightbox-close { position:absolute; top:max(18px,env(safe-area-inset-top)); right:18px; width:48px; height:48px; display:grid; place-items:center; color:#fff; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.35); border-radius:50%; font-size:2rem; line-height:1; cursor:pointer; }
+.label-lightbox-image { width:min(92vw,620px); height:min(72vh,760px); padding:12px; display:grid; place-items:center; background:#f5eee5; border-radius:20px; box-shadow:0 28px 80px rgba(0,0,0,.55); }
+.label-lightbox-image img,.label-lightbox-image .thumb { width:100%; height:100%; object-fit:contain; border-radius:12px; }
+.label-lightbox p { margin:14px 0 0; color:rgba(255,255,255,.75); font-size:.72rem; }
+.product-missing { max-width:560px; padding-top:60px; }
 .product-buy { padding:clamp(24px,5vw,54px); display:flex; flex-direction:column; justify-content:center; align-items:flex-start; }
 .product-buy h1 { margin:10px 0 6px; font:500 clamp(2.5rem,6vw,4.6rem)/.96 Georgia,serif; letter-spacing:-.04em; }
 .product-buy > p { color:var(--muted); }
