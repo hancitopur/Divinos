@@ -9,6 +9,8 @@ import { Bottles } from './pages/Bottles'
 import { Wines } from './pages/Wines'
 import { Racks } from './pages/Racks'
 import { Clients } from './pages/Clients'
+import { Sales } from './pages/Sales'
+import { Admin } from './pages/Admin'
 import { Loading } from './components/ui'
 
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
@@ -18,11 +20,13 @@ const icons = {
   wine: 'M4 7h16v10H4z M7 10h10M7 13h7',
   rack: 'M3 5h18M3 12h18M3 19h18M6 5v14M12 5v14M18 5v14',
   people: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8',
+  sale: 'M3 5h18v14H3zM7 9h10M7 13h5',
+  admin: 'M12 3l2 3 4 .5-2 3 .5 4-4.5-1.5L7.5 13 8 9.5l-2-3L10 6z',
 }
 
 function Shell() {
   const { t, lang, setLang } = useT()
-  const { session, loading } = useAuth()
+  const { session, profile, loading } = useAuth()
   const [showInstall, setShowInstall] = useState(false)
 
   useEffect(() => {
@@ -41,6 +45,8 @@ function Shell() {
     { to: '/wines', label: t('wines'), icon: icons.wine },
     { to: '/racks', label: t('racks'), icon: icons.rack },
     { to: '/clients', label: t('clients'), icon: icons.people },
+    { to: '/sales', label: 'Ventas', icon: icons.sale },
+    ...(profile?.role === 'admin' ? [{ to: '/admin', label: 'Admin', icon: icons.admin }] : []),
   ]
 
   return (
@@ -65,6 +71,8 @@ function Shell() {
           <Route path="/wines" element={<Wines />} />
           <Route path="/racks" element={<Racks />} />
           <Route path="/clients" element={<Clients />} />
+          <Route path="/sales" element={<Sales />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
