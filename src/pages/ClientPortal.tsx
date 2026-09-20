@@ -238,7 +238,27 @@ export function AdminIntakes() {
 }
 
 export function AdminAccounts() {
-  const [rows,setRows]=useState<any[]|null>(null); const load=()=>supabase.from('profiles').select('id,full_name,role,terms_accepted_at').order('full_name').then(async({data})=>{const {data:m}=await supabase.from('memberships').select('*');setRows((data??[]).map((p:any)=>({...p,membership:(m??[]).find((x:any)=>x.user_id===p.id)})))})
-  useEffect(()=>{load()},[])
-  return <div className="stack"><div><span className="landing-kicker">Superadmin</span><h1>Cuentas y membresías</h1></div>{rows===null?<Loading/>:<div className="list">{rows.map((r)=><div className="item" key={r.id}><div className="thumb" style={{width:44,height:44,borderRadius:22}}>{(r.full_name||'?')[0]}</div><div className="body"><b>{r.full_name||'Sin nombre'}</b><div className="muted small">{r.role} {r.membership?`· ${r.membership.plan} · ${r.membership.status}`:''}</div></div>{r.role!=='superadmin'&&<select value={r.role} onChange={async(e)=>{await supabase.from('profiles').update({role:e.target.value}).eq('id',r.id);load()}}><option value="pending">Pendiente</option><option value="member">Cliente</option><option value="admin">Admin</option></select>}</div>)}</div>}</div>
+  const [rows,setRows]=useState<any[]|null>(null)
+  const [paypal,setPaypal]=useState<{ready:boolean;mode?:string;updated_at?:string|null}|null>(null)
+  const [paypalBusy,setPaypalBusy]=useState(false)
+  const [paypalError,setPaypalError]=useState('')
+  const load=()=>supabase.from('profiles').select('id,full_name,role,terms_accepted_at').order('full_name').then(async({data})=>{const {data:m}=await supabase.from('memberships').select('*');setRows((data??[]).map((p:any)=>({...p,membership:(m??[]).find((x:any)=>x.user_id===p.id)})))})
+  const loadPayPal=()=>supabase.functions.invoke('paypal-live-setup',{body:{action:'status'}}).then(({data})=>setPaypal(data||{ready:false}))
+  useEffect(()=>{load();loadPayPal()},[])
+  const setupPayPal=async()=>{
+    setPaypalBusy(true);setPaypalError('')
+    const {data,error}=await supabase.functions.invoke('paypal-live-setup',{body:{action:'setup'}})
+    setPaypalBusy(false)
+    if(error||data?.error){setPaypalError(data?.error||error?.message||'No se pudo conectar PayPal.');return}
+    setPaypal(data)
+  }
+  return <div className="stack">
+    <div><span className="landing-kicker">Superadmin</span><h1>Cuentas y membresías</h1></div>
+    <section className={`paypal-live-card ${paypal?.ready?'ready':''}`}>
+      <div><span className="landing-kicker">Cobros</span><h2>PayPal Live</h2><p>{paypal?.ready?'Conectado. Planes y webhook activos.':'Credenciales guardadas. Falta crear los planes y conectar el webhook.'}</p></div>
+      {paypal?.ready?<span className="paypal-live-status">✓ Listo para probar</span>:<button className="btn" disabled={paypalBusy} onClick={setupPayPal}>{paypalBusy?'Conectando…':'Conectar PayPal Live'}</button>}
+      {paypalError&&<div className="error">{paypalError}</div>}
+    </section>
+    {rows===null?<Loading/>:<div className="list">{rows.map((r)=><div className="item" key={r.id}><div className="thumb" style={{width:44,height:44,borderRadius:22}}>{(r.full_name||'?')[0]}</div><div className="body"><b>{r.full_name||'Sin nombre'}</b><div className="muted small">{r.role} {r.membership?`· ${r.membership.plan} · ${r.membership.status}`:''}</div></div>{r.role!=='superadmin'&&<select value={r.role} onChange={async(e)=>{await supabase.from('profiles').update({role:e.target.value}).eq('id',r.id);load()}}><option value="pending">Pendiente</option><option value="member">Cliente</option><option value="admin">Admin</option></select>}</div>)}</div>}
+  </div>
 }

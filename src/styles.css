@@ -107,6 +107,40 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .slot.mine { outline: 3px solid var(--gold); }
 .slot.sel { background: var(--gold); color: #fff; border-color: var(--gold); }
 .rack-page-actions { min-width: 0; }
+.rack-view-switch { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; padding: 4px; background: #e9e0da; border-radius: 13px; }
+.rack-view-switch button { min-height: 44px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-weight: 700; cursor: pointer; }
+.rack-view-switch button.active { color: var(--wine); background: var(--paper); box-shadow: 0 2px 10px rgba(55,25,29,.1); }
+.rack-view-switch button span { margin-right: 4px; color: var(--gold); font-size: 1.05rem; }
+.cellar-card { overflow: hidden; padding: 14px; color: #fff; border: 1px solid #4a3327; border-radius: 18px; background: radial-gradient(circle at 50% -10%,#6b4933 0,#322018 38%,#160e0b 100%); box-shadow: 0 14px 34px rgba(31,15,11,.25), inset 0 1px rgba(255,255,255,.08); }
+.cellar-card .field label { color: #d7b88a; }
+.cellar-card .field select { color: #fff; border-color: rgba(224,181,110,.34); background: rgba(20,10,7,.68); }
+.cellar-meta { color: #d7c4b5; }
+.cellar-rack { display: grid; gap: 10px; padding: 10px 8px 8px; border: 5px solid #21130e; border-radius: 9px; background: linear-gradient(90deg,#1a0e0a,#2d1911 48%,#180c09); box-shadow: inset 0 0 0 1px rgba(205,151,81,.18), inset 0 14px 25px rgba(0,0,0,.3); }
+.cellar-shelf { position: relative; padding: 24px 8px 13px; border: 1px solid rgba(209,161,98,.12); border-bottom: 8px solid #120905; border-radius: 4px; background: linear-gradient(180deg,rgba(222,161,91,.12),rgba(16,7,5,.52) 52%,rgba(0,0,0,.68)); box-shadow: inset 0 11px 20px rgba(255,184,99,.08),0 5px 8px rgba(0,0,0,.42); }
+.cellar-shelf::after { content:""; position:absolute; left:0; right:0; bottom:-3px; height:2px; background:linear-gradient(90deg,transparent,#9e6334 15%,#d5a25f 50%,#73401f 85%,transparent); opacity:.72; }
+.cellar-shelf-label { position:absolute; top:5px; left:8px; color:#d5a25f; font:700 .62rem ui-monospace,monospace; letter-spacing:.12em; text-transform:uppercase; }
+.cellar-slots { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.cellar-slot { position:relative; min-width:0; min-height:72px; overflow:hidden; display:grid; grid-template-columns:62px minmax(0,1fr); align-items:center; gap:7px; padding:7px 7px 7px 5px; text-align:left; color:#f7eee4; border:1px solid rgba(218,171,105,.13); border-radius:7px; background:rgba(0,0,0,.2); cursor:pointer; }
+.cellar-slot.occupied:active { transform:scale(.98); }
+.cellar-slot.available { display:flex; align-items:center; justify-content:center; min-height:60px; color:rgba(226,197,163,.45); border-style:dashed; background:rgba(255,255,255,.015); }
+.cellar-position { position:absolute; top:3px; right:5px; color:rgba(233,207,179,.46); font:.55rem ui-monospace,monospace; }
+.cellar-bottle { position:relative; width:58px; height:25px; display:block; border-radius:7px 11px 11px 7px; background:linear-gradient(180deg,#40101b,#16080c 58%,#080405); box-shadow:0 7px 9px rgba(0,0,0,.55),inset 0 3px 3px rgba(255,255,255,.1); }
+.cellar-bottle::before { content:""; position:absolute; width:16px; height:15px; right:-11px; top:5px; border-radius:0 4px 4px 0; background:linear-gradient(#771f2f,#2b0a12); box-shadow:inset 0 2px rgba(255,255,255,.1); }
+.cellar-bottle i { position:absolute; left:17px; top:1px; width:22px; height:23px; border-radius:2px; background:linear-gradient(90deg,#d1b57d,#f2e1b6,#c29a55); box-shadow:0 0 8px rgba(230,177,93,.18); }
+.cellar-bottle em { position:absolute; z-index:1; left:19px; top:7px; width:18px; overflow:hidden; color:#4b1c21; font:700 .46rem/1 Georgia,serif; text-align:center; font-style:normal; }
+.cellar-wine { min-width:0; display:flex; flex-direction:column; padding-right:4px; }
+.cellar-wine b { overflow:hidden; font:600 .69rem/1.15 Georgia,serif; white-space:nowrap; text-overflow:ellipsis; }
+.cellar-wine small { margin-top:3px; overflow:hidden; color:#c6afa1; font-size:.54rem; white-space:nowrap; text-overflow:ellipsis; }
+.cellar-free { font-size:1.15rem; font-weight:300; }
+.cellar-slot.mine { outline:2px solid var(--gold); outline-offset:-2px; }
+.paypal-live-card { display:grid; gap:14px; padding:18px; color:#fff; border-radius:18px; background:linear-gradient(135deg,#171b38,#28326b); box-shadow:var(--shadow); }
+.paypal-live-card.ready { background:linear-gradient(135deg,#163b2a,#276344); }
+.paypal-live-card h2 { margin-top:3px; font:500 1.7rem Georgia,serif; }
+.paypal-live-card p { margin:5px 0 0; color:rgba(255,255,255,.7); font-size:.86rem; }
+.paypal-live-card .btn { background:#fff; color:#18214a; }
+.paypal-live-status { width:max-content; padding:8px 12px; color:#143823; background:#e6f5eb; border-radius:999px; font-size:.78rem; font-weight:800; }
+.paypal-live-card .error { grid-column:1/-1; }
+@media (min-width:640px) { .paypal-live-card { grid-template-columns:1fr auto; align-items:center; } }
 .photo-btn { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2px dashed var(--line); border-radius: 12px; padding: 14px; background: #fff; cursor: pointer; color: var(--muted); }
 .photo-btn input { display: none; }
 .label-search { background: #fbf8f5; border: 1px solid var(--line); box-shadow: none; }
@@ -394,6 +428,9 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
   .thumb { width: 48px; height: 64px; }
   .tabbar a { font-size: .66rem; }
   .row.between { flex-wrap: wrap; }
+}
+@media (min-width: 700px) {
+  .cellar-slots { grid-template-columns:repeat(5,minmax(0,1fr)); }
 }
 /* Legal, paid onboarding and private client portal */
 .legal-page { min-height: 100dvh; background: #fbf8f4; }

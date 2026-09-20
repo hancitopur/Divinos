@@ -37,7 +37,9 @@ Deno.serve(async (req) => {
       return json({ error: 'Completa tu nombre legal, teléfono y dirección antes de continuar.' }, 400)
     }
     const planKey = `PAYPAL_PLAN_${plan!.toUpperCase()}`
-    const planId = Deno.env.get(planKey)
+    const planColumn = `plan_${plan}`
+    const { data: paypalConfig } = await admin.from('paypal_config').select('plan_digital,plan_reserva,plan_coleccion,setup_status').eq('id', 1).maybeSingle()
+    const planId = Deno.env.get(planKey) || paypalConfig?.[planColumn]
     const clientId = Deno.env.get('PAYPAL_CLIENT_ID')
     const clientSecret = Deno.env.get('PAYPAL_CLIENT_SECRET')
     if (!planId || !clientId || !clientSecret) return json({ error: 'PayPal todavía no está conectado a Divinos.' }, 503)

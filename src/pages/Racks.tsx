@@ -11,6 +11,7 @@ export function Racks() {
   const nav = useNavigate()
   const [racks, setRacks] = useState<Rack[]>([])
   const [editing, setEditing] = useState<Partial<Rack> | null>(null)
+  const [view, setView] = useState<'cellar' | 'slots'>('cellar')
   const [key, setKey] = useState(0)
 
   const load = () => supabase.from('racks').select('*').order('name').then(({ data }) => { setRacks((data ?? []) as Rack[]); setKey((k) => k + 1) })
@@ -27,10 +28,18 @@ export function Racks() {
           <button className="btn sm" onClick={() => setEditing({ shelves: 4, positions_per_shelf: 8 })}>+ {t('newRack')}</button>
         </div>
       </div>
-      <div className="card">
+      <div className="rack-view-switch" role="group" aria-label={t('racks')}>
+        <button type="button" className={view === 'cellar' ? 'active' : ''} onClick={() => setView('cellar')} aria-pressed={view === 'cellar'}>
+          <span aria-hidden="true">▤</span> {t('cellarView')}
+        </button>
+        <button type="button" className={view === 'slots' ? 'active' : ''} onClick={() => setView('slots')} aria-pressed={view === 'slots'}>
+          <span aria-hidden="true">▦</span> {t('slotView')}
+        </button>
+      </div>
+      <div className={view === 'cellar' ? 'cellar-card' : 'card'}>
         {racks.length === 0
           ? <p className="muted">{t('empty')}</p>
-          : <SlotPicker key={key} value={null} readOnly onTapOccupied={(id) => nav(`/bottles?open=${id}`)} />}
+          : <SlotPicker key={key} value={null} readOnly visual={view === 'cellar'} onTapOccupied={(id) => nav(`/bottles?open=${id}`)} />}
       </div>
       {editing && <RackForm rack={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
     </div>

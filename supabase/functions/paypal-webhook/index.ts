@@ -10,9 +10,11 @@ Deno.serve(async (req) => {
   try { event = JSON.parse(raw) } catch { return reply({ error: 'JSON inválido' }, 400) }
   if (!event?.id || !event?.event_type) return reply({ error: 'Evento incompleto' }, 400)
   try {
+    const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    const { data: paypalConfig } = await admin.from('paypal_config').select('webhook_id').eq('id', 1).maybeSingle()
     const clientId = Deno.env.get('PAYPAL_CLIENT_ID')
     const clientSecret = Deno.env.get('PAYPAL_CLIENT_SECRET')
-    const webhookId = Deno.env.get('PAYPAL_WEBHOOK_ID')
+    const webhookId = Deno.env.get('PAYPAL_WEBHOOK_ID') || paypalConfig?.webhook_id
     if (!clientId || !clientSecret || !webhookId) return reply({ error: 'Webhook no configurado' }, 503)
     const mode = Deno.env.get('PAYPAL_MODE') === 'live' ? 'live' : 'sandbox'
     const api = mode === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com'
@@ -26,7 +28,6 @@ Deno.serve(async (req) => {
     const verified = await verification.json()
     if (!verification.ok || verified.verification_status !== 'SUCCESS') return reply({ error: 'Firma inválida' }, 401)
 
-    const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
     const { data: seen, error: seenError } = await admin.from('payment_events').select('id,status').eq('id', event.id).maybeSingle()
     if (seenError) throw seenError
     if (seen && ['processed','ignored'].includes(seen.status)) return reply({ received: true, duplicate: true })
