@@ -11,7 +11,6 @@ export function Racks() {
   const nav = useNavigate()
   const [racks, setRacks] = useState<Rack[]>([])
   const [editing, setEditing] = useState<Partial<Rack> | null>(null)
-  const [view, setView] = useState<'cellar' | 'slots'>('cellar')
   const [key, setKey] = useState(0)
 
   const load = () => supabase.from('racks').select('*').order('name').then(({ data }) => { setRacks((data ?? []) as Rack[]); setKey((k) => k + 1) })
@@ -19,28 +18,29 @@ export function Racks() {
 
   return (
     <div className="stack">
-      <div className="row between rack-page-head">
+      <div className="row between">
         <h1>{t('racks')}</h1>
-        <div className="row rack-page-actions">
+        <div className="row">
           {racks.length > 0 && <select onChange={(e) => { const r = racks.find((x) => x.id === e.target.value); if (r) setEditing(r) }} value="" style={{ border: '1px solid var(--line)', borderRadius: 8, padding: '6px 8px', background: '#fff' }}>
             <option value="">{t('edit')}…</option>{racks.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>}
           <button className="btn sm" onClick={() => setEditing({ shelves: 4, positions_per_shelf: 8 })}>+ {t('newRack')}</button>
         </div>
       </div>
-      <div className="rack-view-switch" role="group" aria-label={t('racks')}>
-        <button type="button" className={view === 'cellar' ? 'active' : ''} onClick={() => setView('cellar')} aria-pressed={view === 'cellar'}>
-          {t('cellarView')}
-        </button>
-        <button type="button" className={view === 'slots' ? 'active' : ''} onClick={() => setView('slots')} aria-pressed={view === 'slots'}>
-          {t('slotView')}
-        </button>
-      </div>
-      <div className={view === 'cellar' ? 'cellar-card' : 'card'}>
+      <div className="card">
         {racks.length === 0
           ? <p className="muted">{t('empty')}</p>
-          : <SlotPicker key={key} value={null} readOnly visual={view === 'cellar'} onTapOccupied={(id) => nav(`/bottles?open=${id}`)} />}
+          : <SlotPicker key={key} value={null} readOnly onTapOccupied={(id) => nav(`/bottles?open=${id}`)} />}
       </div>
+      {racks.length > 0 && <div className="environment-grid">
+        {racks.map((r) => <div className="environment-card" key={r.id} onClick={() => setEditing(r)}>
+          <div><strong>{r.name}</strong><span>Control ambiental</span></div>
+          <div className="environment-readings">
+            <strong>{r.current_humidity == null ? '—' : `${r.current_humidity}%`}</strong>
+            <span>{r.current_temperature == null ? 'Sin lectura' : `${r.current_temperature} °F`}</span>
+          </div>
+        </div>)}
+      </div>}
       {editing && <RackForm rack={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
     </div>
   )
@@ -54,7 +54,12 @@ function RackForm({ rack, onClose, onSaved }: { rack: Partial<Rack>; onClose: ()
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true); setErr(null)
-    const payload = { name: f.name, description: f.description || null, shelves: Number(f.shelves), positions_per_shelf: Number(f.positions_per_shelf) }
+    const payload = {
+      name: f.name, description: f.description || null, shelves: Number(f.shelves), positions_per_shelf: Number(f.positions_per_shelf),
+      current_humidity: f.current_humidity == null ? null : Number(f.current_humidity),
+      current_temperature: f.current_temperature == null ? null : Number(f.current_temperature),
+      last_environment_check: new Date().toISOString(),
+    }
     const { error } = isNew ? await supabase.from('racks').insert(payload) : await supabase.from('racks').update(payload).eq('id', rack.id!)
     setBusy(false); if (error) setErr(error.message); else onSaved()
   }
@@ -71,6 +76,8 @@ function RackForm({ rack, onClose, onSaved }: { rack: Partial<Rack>; onClose: ()
         <div className="grid2">
           <Field label={t('shelves')}><input type="number" min={1} max={50} required value={f.shelves ?? ''} onChange={(e) => setF({ ...f, shelves: Number(e.target.value) })} /></Field>
           <Field label={t('positionsPerShelf')}><input type="number" min={1} max={60} required value={f.positions_per_shelf ?? ''} onChange={(e) => setF({ ...f, positions_per_shelf: Number(e.target.value) })} /></Field>
+          <Field label="Humedad actual (%)"><input type="number" min={0} max={100} step="0.1" value={f.current_humidity ?? ''} onChange={(e) => setF({ ...f, current_humidity: e.target.value === '' ? null : Number(e.target.value) })} /></Field>
+          <Field label="Temperatura actual (°F)"><input type="number" min={40} max={100} step="0.1" value={f.current_temperature ?? ''} onChange={(e) => setF({ ...f, current_temperature: e.target.value === '' ? null : Number(e.target.value) })} /></Field>
         </div>
         <Field label={t('description')}><input value={f.description ?? ''} onChange={(e) => setF({ ...f, description: e.target.value })} /></Field>
         {err && <div className="error">{err}</div>}
