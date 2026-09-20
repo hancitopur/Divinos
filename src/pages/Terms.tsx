@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 
-export const TERMS_VERSION = '2026-09-20-v3-draft'
+export const TERMS_VERSION = '2026-09-20-v4-draft'
 export const BILLING_VERSION = '2026-09-20-v2-service-fee'
 
 export function Terms() {
@@ -28,6 +28,12 @@ export function Terms() {
         <p>El cliente podrá terminar el servicio conforme a la orden, pagando el balance y retirando sus bienes. Ante emergencia o riesgo de pérdida, Divinos podrá mover temporalmente los bienes a un lugar seguro. Este acuerdo se regirá por las leyes de Puerto Rico.</p>
         <h2>7. Privacidad y cuenta digital</h2>
         <p>Cada cliente puede consultar únicamente su propia colección. No debe compartir credenciales. Divinos utiliza proveedores de infraestructura y pago para operar la cuenta, conservar fotografías y procesar la membresía.</p>
+        <h2>8. Compras de vino y recogido</h2>
+        <p>Las compras están sujetas a disponibilidad, verificación de edad y confirmación del pago. El precio presentado antes de PayPal es el precio final del producto con el servicio incluido, sin perjuicio de impuestos que deban divulgarse. Divinos no enviará bebidas alcohólicas por correo. El comprador deberá presentar identificación válida y cumplir el procedimiento de recogido autorizado.</p>
+        <h2>9. Cancelaciones, reembolsos y excepciones</h2>
+        <p>Una orden duplicada, un pago que no coincida con la orden, falta de inventario o cualquier alerta del proveedor de pago quedará en revisión antes de entregar o mover la botella. La política final deberá establecer por escrito cuándo procede cancelar o reembolsar, los plazos de solicitud y cualquier excepción aplicable a vinos ya recogidos o incorporados al almacenamiento.</p>
+        <h2>10. Información que debe constar en la orden final</h2>
+        <p>Antes de aceptar custodia física deberán identificarse la entidad que presta el servicio, dirección, contacto, alcance del seguro, límites de responsabilidad, procedimiento de reclamación, reglas de acceso y cualquier licencia o requisito regulatorio aplicable.</p>
         <p className="muted small">Términos {TERMS_VERSION} · Divulgación de cargos {BILLING_VERSION}. La aceptación electrónica registra la versión, plan, importe y fecha aceptada.</p>
       </main>
     </div>

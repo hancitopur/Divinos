@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { sendTransactionalEmail } from '../_shared/transactional-email.ts'
 
 const cors={ 'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS' }
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json'}})
@@ -33,6 +34,11 @@ Deno.serve(async(req)=>{
     }
     const {data:placed,error:completeError}=await admin.rpc('complete_wine_order',{p_order_id:order.id,p_paypal_order_id:paypalOrderId,p_capture_id:payment.id}).single()
     if(completeError)return json({error:completeError.message},409)
+    if(user.email){
+      const site=Deno.env.get('PUBLIC_SITE_URL')||'https://divinospr.com'
+      const location=placed.rack_locations?.join(', ')
+      await sendTransactionalEmail({to:user.email,subject:`Compra Divinos · orden ${order.id.slice(0,8).toUpperCase()}`,title:'Tu compra está confirmada',preheader:'Recibimos tu pago y registramos tu orden.',paragraphs:[order.fulfillment_type==='pickup'?'Te avisaremos cuando tu botella esté lista para recogido autorizado.':`La botella ya fue añadida a tu colección${location?` en ${location}`:''}.`],details:[['Orden',order.id.slice(0,8).toUpperCase()],['Total',`$${Number(order.total).toFixed(2)} USD`],['Entrega',order.fulfillment_type==='pickup'?'Recogido autorizado':'Guardar en Divinos']],actionLabel:'Ver mi cuenta Divinos',actionUrl:`${site}/#/` ,idempotencyKey:`wine-order-${order.id}`}).catch(()=>null)
+    }
     return json({completed:true,order_id:order.id,locations:placed.rack_locations,bottles:placed.bottles_created,fulfillment:order.fulfillment_type,pickup:order.fulfillment_type==='pickup'})
   }catch(error){return json({error:error instanceof Error?error.message:'Error inesperado.'},500)}
 })

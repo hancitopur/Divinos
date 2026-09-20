@@ -1,20 +1,31 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase, configured } from '../lib/supabase'
 import { useT } from '../lib/i18n'
 import { Field } from '../components/ui'
 import { Brand } from '../components/Brand'
 import { TERMS_VERSION } from './Terms'
+import { wineProductPhoto } from '../lib/productPhotos'
+import { storePrices } from '../lib/storePricing'
+import { money } from '../lib/i18n'
 
 export function Login() {
   const { t, lang, setLang } = useT()
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const next = params.get('next'); const safeNext = next?.startsWith('/') ? next : '/'
+  const productId = safeNext.match(/^\/shop\/([0-9a-f-]+)/i)?.[1] ?? null
+  const purchaseMode = safeNext.includes('buy=storage') ? 'storage' : 'pickup'
   const [mode, setMode] = useState<'in' | 'up'>(() => params.get('plan') || next?.startsWith('/shop') ? 'up' : 'in')
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [name, setName] = useState('')
   const [err, setErr] = useState<string | null>(null); const [msg, setMsg] = useState<string | null>(null); const [busy, setBusy] = useState(false)
   const [accepted, setAccepted] = useState(false)
+  const [checkoutOffer, setCheckoutOffer] = useState<any|null>(null)
+
+  useEffect(() => {
+    if (!productId) return
+    supabase.from('wine_sale_offers').select('id,price,active,wines(name,producer,vintage,region,country)').eq('id', productId).eq('active', true).maybeSingle().then(({ data }) => setCheckoutOffer(data))
+  }, [productId])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(null); setMsg(null); setBusy(true)
@@ -37,14 +48,16 @@ export function Login() {
 
   return (
     <div className="auth">
-      <form className="card stack" onSubmit={submit}>
+      <form className={`card stack ${checkoutOffer ? 'checkout-auth-card' : ''}`} onSubmit={submit}>
         <Brand className="auth-brand" />
-        {next?.startsWith('/shop') && <div className="info"><b>Completa tu compra</b><br/>Crea tu cuenta para continuar con la botella que seleccionaste.</div>}
+        {checkoutOffer && (()=>{const wine=Array.isArray(checkoutOffer.wines)?checkoutOffer.wines[0]:checkoutOffer.wines;const price=storePrices(Number(checkoutOffer.price)).public;return <div className="checkout-auth-summary"><img src={wineProductPhoto(wine?.name)} alt={`Botella de ${wine?.name||'vino'}`}/><div><small>Tu selección</small><b>{wine?.name} {wine?.vintage||''}</b><span>{[wine?.producer,wine?.region].filter(Boolean).join(' · ')}</span><strong>{money(price,lang)}</strong><em>{purchaseMode==='storage'?'Guardar en Divinos requiere una membresía física activa.':'Compra para recogido autorizado.'}</em></div></div>})()}
+        {next?.startsWith('/shop') && <div className="checkout-progress" aria-label="Progreso de compra"><span className="active"><b>1</b> Cuenta</span><i/><span><b>2</b> Confirmar</span><i/><span><b>3</b> PayPal</span></div>}
+        {next?.startsWith('/shop') && <div className="info"><b>Continúa donde estabas</b><br/>Al entrar regresarás a esta botella para confirmar edad y pago.</div>}
         {!configured && <div className="error">{t('notConfigured')}</div>}
         {mode === 'up' && <Field label={t('fullName')}><input value={name} onChange={(e) => setName(e.target.value)} required /></Field>}
         <Field label={t('email')}><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></Field>
         <Field label={t('password')}><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} /></Field>
-        {mode === 'up' && <label className="terms-check"><input type="checkbox" checked={accepted} onChange={(e)=>setAccepted(e.target.checked)} required /> Leí y acepto el <Link to="/terms" target="_blank">acuerdo legal y los términos y condiciones</Link>. Antes del pago completaré mis datos y aceptaré el cargo del plan seleccionado.</label>}
+        {mode === 'up' && <label className="terms-check"><input type="checkbox" checked={accepted} onChange={(e)=>setAccepted(e.target.checked)} required /><span>Leí y acepto el <Link to="/terms" target="_blank">acuerdo legal y los términos y condiciones</Link>. Antes del pago confirmaré el producto, entrega y precio final.</span></label>}
         {err && <div className="error">{err}</div>}
         {msg && <div className="info">{msg}</div>}
         <button className="btn" disabled={busy || !configured || (mode === 'up' && !accepted)}>{mode === 'in' ? t('signIn') : t('signUp')}</button>

@@ -91,8 +91,8 @@ export function AccountPending({ membership }: { membership: Membership | null }
 
         <section className="pending-section pending-consent">
           <div className="pending-step"><b>3</b><span><strong>Acuerdo y cargos</strong><small>Ambas aceptaciones son obligatorias antes de PayPal.</small></span></div>
-          <label className="terms-check"><input type="checkbox" checked={acceptedLegal} onChange={(e)=>setAcceptedLegal(e.target.checked)} required /> Leí y acepto el <Link to="/terms" target="_blank">acuerdo legal y los términos y condiciones</Link>.</label>
-          <label className="terms-check"><input type="checkbox" checked={acceptedCharges} onChange={(e)=>setAcceptedCharges(e.target.checked)} required /> Autorizo el cargo recurrente total de <strong>{money(totalCents)}/mes</strong> mediante PayPal, compuesto por {money(baseCents)} del plan y {money(feeCents)} de cargo de servicio (7.5%), más impuestos aplicables.</label>
+          <label className="terms-check"><input type="checkbox" checked={acceptedLegal} onChange={(e)=>setAcceptedLegal(e.target.checked)} required /><span>Leí y acepto el <Link to="/terms" target="_blank">acuerdo legal y los términos y condiciones</Link>.</span></label>
+          <label className="terms-check"><input type="checkbox" checked={acceptedCharges} onChange={(e)=>setAcceptedCharges(e.target.checked)} required /><span>Autorizo el cargo recurrente total de <strong>{money(totalCents)}/mes</strong> mediante PayPal, compuesto por {money(baseCents)} del plan y {money(feeCents)} de cargo de servicio (7.5%), más impuestos aplicables.</span></label>
           <div className="charge-summary"><span>Plan {plan.name}</span><strong>{money(baseCents)}</strong><span>Cargo de servicio · 7.5%</span><strong>{money(feeCents)}</strong><span className="charge-total">Total mensual</span><strong className="charge-total">{money(totalCents)} USD</strong><small>Renovación automática. Puedes cancelar desde PayPal.</small></div>
         </section>
 

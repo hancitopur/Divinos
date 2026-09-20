@@ -8,7 +8,7 @@ const cors = {
 }
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
-const TERMS_VERSION = '2026-09-20-v3-draft'
+const TERMS_VERSION = '2026-09-20-v4-draft'
 const BILLING_VERSION = '2026-09-20-v2-service-fee'
 const PLAN_BASE_CENTS: Record<string, number> = { digital: 900, reserva: 4900, coleccion: 7900 }
 const SERVICE_FEE_RATE = 0.075

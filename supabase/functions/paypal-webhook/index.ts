@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { sendTransactionalEmail } from '../_shared/transactional-email.ts'
 
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
@@ -64,7 +65,15 @@ Deno.serve(async (req) => {
       const query = admin.from('memberships').update(changes)
       const { data: membership, error } = userId ? await query.eq('user_id', userId).select('user_id').maybeSingle() : await query.eq('paypal_subscription_id', subscriptionId).select('user_id').maybeSingle()
       if (error) throw error
-      if (membership?.user_id) await admin.from('profiles').update({ role: status === 'active' ? 'member' : 'pending' }).eq('id', membership.user_id).neq('role','superadmin').neq('role','admin')
+      if (membership?.user_id) {
+        await admin.from('profiles').update({ role: status === 'active' ? 'member' : 'pending' }).eq('id', membership.user_id).neq('role','superadmin').neq('role','admin')
+        if (status === 'active' && event.event_type === 'BILLING.SUBSCRIPTION.ACTIVATED') {
+          const { data: member } = await admin.from('memberships').select('plan').eq('user_id', membership.user_id).maybeSingle()
+          const { data: authUser } = await admin.auth.admin.getUserById(membership.user_id)
+          const site = Deno.env.get('PUBLIC_SITE_URL') || 'https://divinospr.com'
+          if (authUser.user?.email) await sendTransactionalEmail({to:authUser.user.email,subject:'Tu membresía Divinos está activa',title:'Bienvenido a Divinos',preheader:'Tu membresía ya está activa y puedes entrar a tu colección.',paragraphs:['PayPal confirmó tu membresía. Ya puedes acceder a las herramientas de tu cuenta y administrar tu colección.'],details:[['Plan',String(member?.plan||'Divinos')],['Estado','Activo']],actionLabel:'Entrar a Divinos',actionUrl:`${site}/#/`,idempotencyKey:`membership-activated-${subscriptionId}`}).catch(()=>null)
+        }
+      }
     }
     const { error: processedError } = await admin.from('payment_events').update({ status:status?'processed':'ignored', processed_at:new Date().toISOString(), error_message:null }).eq('id',event.id)
     if (processedError) throw processedError
