@@ -9,12 +9,12 @@ export const supabase = createClient(url || 'https://placeholder.supabase.co', k
   auth: { persistSession: true, autoRefreshToken: true },
 })
 
-export async function labelUrl(path: string | null | undefined, width = 400): Promise<string | null> {
+export function labelUrl(path: string | null | undefined, width = 400): string | null {
   if (!path) return null
-  const { data, error } = await supabase.storage.from('labels').createSignedUrl(path, 60 * 60, {
+  const { data } = supabase.storage.from('labels').getPublicUrl(path, {
     transform: { width, resize: 'contain' },
   })
-  return error ? null : data.signedUrl
+  return data.publicUrl
 }
 
 /** Upload a label photo, returns storage path. Compresses to ~1200px JPEG first. */
