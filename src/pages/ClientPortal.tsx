@@ -28,7 +28,7 @@ export function ClientOverview() {
     {limit && <div className="client-capacity"><div className="row between"><b>Capacidad del plan</b><span>{pct}%</span></div><i><em style={{ width: `${pct}%` }} /></i></div>}
     <div className="row between"><h2>Actividad reciente</h2><Link className="small bold" to="/collection">Ver todas</Link></div>
     {recent.length === 0 ? <Empty /> : <div className="client-bottle-strip">{recent.map((b) => <article key={b.id}><Thumb path={b.label_photo_path} label={`${b.wine_name} ${b.vintage ?? ''}`} /><div><b>{b.wine_name}</b><small>{[b.vintage,b.region].filter(Boolean).join(' · ')}</small><span>{b.rack_name ? `${b.rack_name} · S${b.shelf} · P${b.position}` : 'Por ubicar'}</span></div></article>)}</div>}
-    <Link className="btn client-primary" to="/intake">+ Añadir botellas</Link>
+    <Link className="btn client-primary" to="/intake">Solicitar entrada de botellas</Link>
   </div>
 }
 
@@ -62,7 +62,7 @@ export function ClientIntake() {
     } catch (ex: any) { setError(ex.message) } finally { setBusy(false) }
   }
   if (!clientId) return <div className="error">Tu cuenta todavía no está vinculada a una colección.</div>
-  return <div className="stack client-page"><div><span className="landing-kicker">Entrada digital</span><h1>Añadir botellas</h1><p className="muted">Busca la etiqueta o toma una foto. Divinos verificará los datos cuando reciba tu colección.</p></div>
+  return <div className="stack client-page"><div><span className="landing-kicker">Solicitud del cliente</span><h1>Solicitar entrada de botellas</h1><p className="muted">Busca la etiqueta o toma una foto para enviar la información. Esto no crea productos ni añade botellas al inventario: un administrador debe revisar y aprobar la solicitud.</p></div>
     {done ? <div className="client-success"><span>✓</span><h2>Colección enviada</h2><p>La entrada quedó pendiente de revisión. Te avisaremos cuando las botellas estén verificadas y ubicadas.</p><button className="btn" onClick={()=>{setDone(false);setForm({...form,name:'',producer:'',vintage:'',quantity:'1',purchase_price:'',notes:'',label_photo_path:''})}}>Añadir otra</button></div> : <form className="stack intake-live" onSubmit={async(e)=>{
       e.preventDefault();setBusy(true);setError(null)
       const { data:req,error:reqErr }=await supabase.from('intake_requests').insert({client_id:clientId,submitted_by:(await supabase.auth.getUser()).data.user!.id,status:'draft'}).select('id').single()
@@ -79,7 +79,7 @@ export function ClientIntake() {
       <Field label="Vino"><input required value={form.name} onChange={(e)=>set('name',e.target.value)} /></Field>
       <div className="grid2"><Field label="Productor"><input value={form.producer} onChange={(e)=>set('producer',e.target.value)} /></Field><Field label="Añada"><input type="number" min="1800" max="2100" value={form.vintage} onChange={(e)=>set('vintage',e.target.value)} /></Field><Field label="Región"><input value={form.region} onChange={(e)=>set('region',e.target.value)} /></Field><Field label="País"><input value={form.country} onChange={(e)=>set('country',e.target.value)} /></Field><Field label="Cantidad"><input type="number" min="1" max="200" required value={form.quantity} onChange={(e)=>set('quantity',e.target.value)} /></Field><Field label="Precio por botella (opcional)"><input type="number" min="0" step="0.01" value={form.purchase_price} onChange={(e)=>set('purchase_price',e.target.value)} /></Field></div>
       <Field label="Notas"><textarea rows={2} value={form.notes} onChange={(e)=>set('notes',e.target.value)} /></Field>
-      {error&&<div className="error">{error}</div>}<button className="btn" disabled={busy}>{busy?'Enviando…':`Enviar ${form.quantity} botella${Number(form.quantity)===1?'':'s'} a revisión`}</button>
+      {error&&<div className="error">{error}</div>}<button className="btn" disabled={busy}>{busy?'Enviando…':`Enviar solicitud de ${form.quantity} botella${Number(form.quantity)===1?'':'s'}`}</button>
     </form>}
   </div>
 }
