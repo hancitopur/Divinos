@@ -50,6 +50,7 @@ export function AccountPending({ membership }: { membership: Membership | null }
       <span className="landing-kicker">Tu cuenta Divinos</span>
       <h1>{status === 'approval_pending' ? 'Termina la aprobación en PayPal.' : 'Completa y activa tu membresía.'}</h1>
       <p>Tu información, aceptación y pago son obligatorios. No tendrás acceso al inventario hasta que PayPal confirme la suscripción.</p>
+      <Link className="btn secondary" to="/shop">Ver tienda con precio regular</Link>
       <form className="pending-form" onSubmit={async (event) => {
         event.preventDefault(); setBusy(true); setError(null)
         try {

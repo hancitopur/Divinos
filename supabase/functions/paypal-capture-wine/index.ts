@@ -33,6 +33,6 @@ Deno.serve(async(req)=>{
     }
     const {data:placed,error:completeError}=await admin.rpc('complete_wine_order',{p_order_id:order.id,p_paypal_order_id:paypalOrderId,p_capture_id:payment.id}).single()
     if(completeError)return json({error:completeError.message},409)
-    return json({completed:true,order_id:order.id,locations:placed.rack_locations,bottles:placed.bottles_created})
+    return json({completed:true,order_id:order.id,locations:placed.rack_locations,bottles:placed.bottles_created,fulfillment:order.fulfillment_type,pickup:order.fulfillment_type==='pickup'})
   }catch(error){return json({error:error instanceof Error?error.message:'Error inesperado.'},500)}
 })

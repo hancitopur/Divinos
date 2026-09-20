@@ -517,6 +517,42 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 }
 @media (max-width:600px) { .demo-shop-preview{padding:19px 14px}.demo-shop-preview .demo-section-head{align-items:flex-start;flex-direction:column}.demo-shop-grid{grid-template-columns:1fr}.demo-shop-grid article{grid-template-columns:72px minmax(0,1fr)} }
 
+/* Rich storefront */
+.shop-grid article { grid-template-columns:minmax(210px,32%) minmax(0,1fr); }
+.shop-gallery { position:relative; min-height:300px; padding:14px; display:grid; grid-template-columns:1fr 1fr; gap:8px; background:linear-gradient(150deg,#f5eee6,#fff); }
+.shop-gallery > span { position:absolute; z-index:2; top:8px; left:8px; padding:5px 8px; color:var(--wine-dark); background:var(--gold); border-radius:7px; font-size:.58rem; font-weight:850; text-transform:uppercase; }
+.shop-bottle-view,.shop-label-view { min-width:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:7px; }
+.shop-bottle-view > small,.shop-label-view > small { color:var(--muted); font-size:.62rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.shop-gallery .thumb { width:100%; height:230px; border-radius:12px; }
+.shop-label-view .thumb { height:145px; align-self:center; }
+.shop-bottle-fallback { position:relative; width:90px; height:230px; display:flex; align-items:center; justify-content:center; }
+.shop-bottle-fallback i { position:absolute; bottom:0; width:72px; height:180px; background:linear-gradient(90deg,#2a1118,#5b1a2b 48%,#310f19); border-radius:20px 20px 13px 13px; box-shadow:inset 9px 0 14px rgba(255,255,255,.08),0 18px 28px rgba(40,18,24,.2); }
+.shop-bottle-fallback i:before { content:""; position:absolute; width:31px; height:65px; left:20px; top:-55px; background:#35121d; border-radius:6px 6px 2px 2px; }
+.shop-bottle-fallback i:after { content:""; position:absolute; left:9px; right:9px; top:63px; height:67px; background:#eee1c4; border:2px solid #c7a45b; border-radius:3px; }
+.shop-bottle-fallback span { position:relative; z-index:1; width:58px; margin-top:56px; color:var(--wine-dark); text-align:center; font:700 .54rem/1.15 Georgia,serif; }
+.wine-facts { margin:6px 0 13px; display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.wine-facts span { min-width:0; padding:8px 9px; display:flex; flex-direction:column; color:#403438; background:var(--cream); border-radius:9px; font-size:.72rem; }
+.wine-facts b { margin-bottom:2px; color:var(--muted); font-size:.55rem; letter-spacing:.06em; text-transform:uppercase; }
+.shop-tier-prices { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.shop-tier-prices > span { padding:10px 11px; display:flex; flex-direction:column; border:1px solid var(--line); border-radius:11px; }
+.shop-tier-prices > span.selected { color:var(--wine-dark); background:#f1e5c9; border-color:var(--gold); box-shadow:inset 0 0 0 1px var(--gold); }
+.shop-tier-prices small { color:var(--muted); font-size:.6rem; font-weight:750; text-transform:uppercase; }
+.shop-tier-prices b { margin-top:2px; font:600 1.15rem Georgia,serif; }
+.fulfillment-choice { margin-top:9px; display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.fulfillment-choice button { min-width:0; min-height:66px; padding:9px; display:flex; flex-direction:column; text-align:left; background:#fff; border:1px solid var(--line); border-radius:11px; cursor:pointer; }
+.fulfillment-choice button.selected { color:#fff; background:var(--wine); border-color:var(--wine); }
+.fulfillment-choice button:disabled { opacity:.45; cursor:not-allowed; }
+.fulfillment-choice small { margin-top:3px; opacity:.66; font-size:.58rem; }
+@media (max-width:620px) {
+  .shop-grid article { grid-template-columns:1fr; }
+  .shop-gallery { min-height:255px; grid-template-columns:1.1fr .9fr; }
+  .shop-gallery .thumb { height:190px; }
+  .shop-label-view .thumb { height:125px; }
+  .shop-bottle-fallback { height:190px; transform:scale(.84); }
+  .shop-copy { padding:16px 14px; }
+  .fulfillment-choice { grid-template-columns:1fr; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

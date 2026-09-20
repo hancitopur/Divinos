@@ -75,6 +75,7 @@ function Shell() {
 
   const paidMember = profile?.role === 'member' && membership?.status === 'active'
   if (paidMember) return <ClientShell />
+  if (location.pathname === '/shop') return <div className="app client-app"><header className="topbar"><div className="brand"><Brand light /></div><button onClick={()=>supabase.auth.signOut()}>Salir</button></header><main className="main client-main"><ClientShop /></main></div>
   if (!profile || profile.role === 'pending' || profile.role === 'member') return <AccountPending membership={membership} />
 
   const tabs = [

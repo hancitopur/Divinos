@@ -29,7 +29,7 @@ export interface Client {
 export interface Wine {
   id: string; name: string; producer: string | null; vintage: number | null; region: string | null
   country: string | null; varietal: string | null; type: WineType | null; size_ml: number
-  label_photo_path: string | null; notes: string | null; barcode: string | null
+  label_photo_path: string | null; bottle_photo_path: string | null; notes: string | null; barcode: string | null
   label_source: 'camera_upload' | 'open_food_facts' | 'wikimedia_commons' | null; label_source_url: string | null
 }
 

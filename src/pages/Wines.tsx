@@ -70,7 +70,7 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
     const payload = {
       name: f.name, producer: f.producer || null, vintage: f.vintage ? Number(f.vintage) : null, region: f.region || null,
       country: f.country || null, varietal: f.varietal || null, type: f.type || null, size_ml: Number(f.size_ml || 750),
-      label_photo_path: f.label_photo_path ?? null, notes: f.notes || null, barcode: f.barcode || null,
+      label_photo_path: f.label_photo_path ?? null, bottle_photo_path: f.bottle_photo_path ?? null, notes: f.notes || null, barcode: f.barcode || null,
       label_source: f.label_source || null, label_source_url: f.label_source_url || null,
     }
     const { error } = isNew ? await supabase.from('wines').insert(payload) : await supabase.from('wines').update(payload).eq('id', wine.id!)
@@ -85,6 +85,9 @@ function WineForm({ wine, onClose, onSaved }: { wine: Partial<Wine>; onClose: ()
   return (
     <Sheet title={isNew ? t('newWine') : t('edit')} onClose={onClose}>
       <form className="stack" onSubmit={save}>
+        <Field label={lang === 'es' ? 'Foto de la botella completa' : 'Full bottle photo'}>
+          <PhotoPicker path={f.bottle_photo_path} prefix="wines/bottles" onUploaded={(p) => set('bottle_photo_path', p)} />
+        </Field>
         <Field label={t('labelPhoto')}>
           <PhotoPicker path={f.label_photo_path} prefix="wines" onUploaded={(p) => {
             setF((prev) => ({ ...prev, label_photo_path: p, label_source: 'camera_upload', label_source_url: null }))

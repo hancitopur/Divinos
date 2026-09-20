@@ -13,8 +13,9 @@ Deno.serve(async(req)=>{
     const url=Deno.env.get('SUPABASE_URL')!,anon=Deno.env.get('SUPABASE_ANON_KEY')!,service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const userClient=createClient(url,anon,{global:{headers:{Authorization:auth}}})
     const {data:{user},error:userError}=await userClient.auth.getUser(); if(userError||!user) return json({error:'Sesión inválida.'},401)
-    const {offerId,quantity=1,acceptAge}=await req.json() as {offerId?:string;quantity?:number;acceptAge?:boolean}
+    const {offerId,quantity=1,acceptAge,fulfillment='pickup'}=await req.json() as {offerId?:string;quantity?:number;acceptAge?:boolean;fulfillment?:'storage'|'pickup'}
     if(!offerId||!Number.isInteger(quantity)||quantity<1||quantity>12) return json({error:'Selección inválida.'},400)
+    if(!['storage','pickup'].includes(fulfillment)) return json({error:'Selecciona guardar o recoger.'},400)
     if(acceptAge!==true) return json({error:'Debes confirmar que tienes 18 años o más.'},400)
 
     const clientId=Deno.env.get('PAYPAL_CLIENT_ID'),secret=Deno.env.get('PAYPAL_CLIENT_SECRET')
@@ -26,7 +27,7 @@ Deno.serve(async(req)=>{
     const {access_token}=await tokenResponse.json()
 
     const admin=createClient(url,service)
-    const {data:order,error:reserveError}=await admin.rpc('reserve_wine_order',{p_user_id:user.id,p_offer_id:offerId,p_quantity:quantity}).single()
+    const {data:order,error:reserveError}=await admin.rpc('reserve_wine_order',{p_user_id:user.id,p_offer_id:offerId,p_quantity:quantity,p_fulfillment:fulfillment}).single()
     if(reserveError) return json({error:reserveError.message},409)
     reservedId=order.id
     const {data:offer,error:offerError}=await admin.from('wine_sale_offers').select('description,wines(name,producer,vintage)').eq('id',offerId).single()
@@ -36,7 +37,7 @@ Deno.serve(async(req)=>{
     const paypalResponse=await fetch(`${api}/v2/checkout/orders`,{
       method:'POST',headers:{Authorization:`Bearer ${access_token}`,'Content-Type':'application/json','PayPal-Request-Id':`wine-${order.id}`},
       body:JSON.stringify({intent:'CAPTURE',purchase_units:[{reference_id:order.id,custom_id:order.id,invoice_id:`DIV-${order.id}`,
-        description:`${wine?.name||'Vino'} ${wine?.vintage||''}`.trim(),amount:{currency_code:'USD',value:Number(order.total).toFixed(2),breakdown:{item_total:{currency_code:'USD',value:Number(order.subtotal).toFixed(2)},handling:{currency_code:'USD',value:Number(order.service_fee_amount).toFixed(2)}}},
+        description:`${wine?.name||'Vino'} ${wine?.vintage||''} · ${fulfillment==='storage'?'Guardar en cava':'Recogido'}`.trim(),amount:{currency_code:'USD',value:Number(order.total).toFixed(2),breakdown:{item_total:{currency_code:'USD',value:Number(order.subtotal).toFixed(2)},handling:{currency_code:'USD',value:Number(order.service_fee_amount).toFixed(2)}}},
         items:[{name:`${wine?.name||'Vino'} ${wine?.vintage||''}`.trim().slice(0,127),description:String(wine?.producer||offer.description||'Divinos').slice(0,127),unit_amount:{currency_code:'USD',value:Number(order.unit_price).toFixed(2)},quantity:String(order.quantity),category:'PHYSICAL_GOODS'}]}],
         application_context:{brand_name:'Divinos',locale:'es-PR',user_action:'PAY_NOW',shipping_preference:'NO_SHIPPING',return_url:`${site}/?wine_order=${order.id}#/shop?paypal=return`,cancel_url:`${site}/?wine_order=${order.id}#/shop?paypal=cancelled`}})
     })
@@ -46,7 +47,7 @@ Deno.serve(async(req)=>{
     if(!approval) throw new Error('PayPal no devolvió el enlace de aprobación.')
     const {error:updateError}=await admin.from('wine_orders').update({paypal_order_id:paypal.id}).eq('id',order.id)
     if(updateError) throw updateError
-    return json({approval_url:approval,order_id:order.id,total:order.total})
+    return json({approval_url:approval,order_id:order.id,total:order.total,pricing_tier:order.pricing_tier,fulfillment:order.fulfillment_type})
   }catch(error){
     if(reservedId){try{const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);await admin.rpc('release_wine_order',{p_order_id:reservedId,p_status:'failed'})}catch{}}
     return json({error:error instanceof Error?error.message:'Error inesperado.'},500)
