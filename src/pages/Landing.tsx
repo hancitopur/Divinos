@@ -2,16 +2,15 @@ import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 
 const features = [
-  ['Registra', 'Fotografía la etiqueta y Divinos completa los datos disponibles.'],
-  ['Organiza', 'Cada botella queda asignada a un rack y una posición exacta.'],
-  ['Protege', 'Temperatura controlada, cámaras y seguridad 24 horas.'],
-  ['Disfruta', 'Encuentra tu vino y conoce el valor de tu colección desde el teléfono.'],
+  ['Fotografía', 'Toma la etiqueta. Completamos la información disponible.'],
+  ['Guardamos', 'Asignamos cada botella a una posición exacta.'],
+  ['Disfruta', 'Encuéntrala desde tu teléfono cuando la quieras.'],
 ]
 
 const storagePlans = [
-  { name: 'Digital', capacity: 'Tu propia cava', price: '9', total: '9.68', note: 'Inventario y aplicación' },
-  { name: 'Reserva', capacity: 'Hasta 72 botellas', price: '49', total: '52.68', note: '6 cajas almacenadas', featured: true },
-  { name: 'Colección', capacity: 'Hasta 144 botellas', price: '79', total: '84.93', note: '12 cajas almacenadas' },
+  { name: 'Digital', capacity: 'Tu propia cava', total: '9.68', note: 'Inventario y aplicación' },
+  { name: 'Reserva', capacity: 'Hasta 72 botellas', total: '52.68', note: '6 cajas almacenadas', featured: true },
+  { name: 'Colección', capacity: 'Hasta 144 botellas', total: '84.93', note: '12 cajas almacenadas' },
 ]
 
 function PayLink({ plan, children, secondary = false }: { plan: string; children: string; secondary?: boolean }) {
@@ -38,23 +37,14 @@ export function Landing() {
         <section className="landing-hero">
           <div className="hero-copy">
             <span className="landing-kicker">Tu colección. Siempre localizada.</span>
-            <h1>Tu colección merece el lugar correcto.</h1>
-            <p>Almacenamiento climatizado y control digital para proteger, localizar y conocer el valor de cada botella.</p>
+            <h1>Tu vino, protegido y siempre localizado.</h1>
+            <p>Guardamos tu colección en condiciones controladas. Tú la ves y la encuentras desde el teléfono.</p>
             <div className="hero-actions">
               <Jump className="btn landing-btn" to="planes">Reservar mi espacio</Jump>
               <Link className="btn landing-btn secondary" to="/demo">Ver demo</Link>
             </div>
           </div>
-          <div className="cellar-visual" aria-label="Vista resumida de una colección en Divinos">
-            <div className="visual-top"><Brand compact light /><span>Mi cava</span><b>96 botellas</b></div>
-            <div className="visual-value"><small>Valor de la colección</small><strong>$10,248</strong><span>+12 botellas este mes</span></div>
-            <div className="visual-racks">
-              {[82, 64, 91].map((value, i) => <div key={value}><span>Rack {String.fromCharCode(65 + i)}</span><i><em style={{ width: `${value}%` }} /></i><b>{value}%</b></div>)}
-            </div>
-            <div className="visual-bottles">
-              <span>Rioja</span><span>Napa Valley</span><span>Mendoza</span><span>Bordeaux</span>
-            </div>
-          </div>
+          <figure className="cellar-photo"><img src="/divinos-cellar-hero.webp" alt="Colección organizada en una cava de vinos con acceso desde el teléfono" /><figcaption><b>Tu cava en el teléfono</b><span>Inventario, ubicación y valor en un solo lugar.</span></figcaption></figure>
         </section>
 
         <section className="landing-strip security-strip" aria-label="Protección de la cava">
@@ -62,28 +52,25 @@ export function Landing() {
         </section>
 
         <section className="landing-section" id="como-funciona">
-          <div className="section-heading"><span className="landing-kicker">Simple desde el primer día</span><h2>De la etiqueta a tu cava en cuatro pasos.</h2></div>
-          <div className="feature-grid">
-            {features.map(([title, body], index) => <article key={title}><span>{index + 1}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}
-          </div>
+          <div className="process-layout"><figure className="process-photo"><img src="/divinos-scan-cellar.webp" alt="Registro de una botella fotografiando su etiqueta" /></figure><div><div className="section-heading"><span className="landing-kicker">Así de fácil</span><h2>Fotografía. Guarda. Disfruta.</h2></div><div className="feature-grid">{features.map(([title, body], index) => <article key={title}><span>{index + 1}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}</div></div></div>
         </section>
 
         <section className="landing-section plans-section" id="planes">
-          <div className="section-heading"><span className="landing-kicker">Planes claros</span><h2>Empieza pequeño. Crece sin mover tu colección.</h2><p>Todos los planes físicos incluyen inventario digital, temperatura controlada, cámaras y seguridad 24 horas.</p></div>
+          <div className="section-heading"><span className="landing-kicker">Elige tu espacio</span><h2>Un plan para cada colección.</h2><p>Los planes físicos incluyen protección, cámaras e inventario digital.</p></div>
           <div className="pricing-line">
             {storagePlans.map((plan) => (
               <article className={plan.featured ? 'featured' : ''} key={plan.name}>
                 {plan.featured && <span className="popular">Más elegido</span>}
                 <span className="plan-label">{plan.name}</span>
-                <strong><sup>$</sup>{plan.price}<small>/mes</small></strong>
-                <span className="plan-total">Total con servicio: ${plan.total}/mes</span>
+                <strong><sup>$</sup>{plan.total}<small>/mes</small></strong>
+                <span className="plan-total">Precio final</span>
                 <h3>{plan.capacity}</h3><p>{plan.note}</p>
                 <PayLink plan={plan.name.toLowerCase()} secondary={plan.name !== 'Digital'}>{plan.name === 'Digital' ? 'Activar app' : 'Reservar'}</PayLink>
               </article>
             ))}
           </div>
           <div className="included-line"><span>Incluido con almacenamiento</span><b>Control de temperatura</b><b>Videovigilancia</b><b>Seguridad 24/7</b><b>Inventario en Divinos</b></div>
-          <p className="payment-note">A cada plan se añade un cargo de servicio de 7.5%, claramente desglosado antes de pagar. Pago recurrente protegido por PayPal; la cuenta se activa solamente cuando PayPal confirma la suscripción.</p>
+          <p className="payment-note">Precios finales con servicio incluido. Pago recurrente protegido por PayPal.</p>
         </section>
 
         <section className="landing-final">
