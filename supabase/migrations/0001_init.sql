@@ -1,4 +1,4 @@
--- Cava · Wine storage inventory
+-- CigarrosPR Humidor · Cigar storage inventory
 -- Run this in Supabase → SQL Editor (or `supabase db push`).
 
 create extension if not exists "pgcrypto";
@@ -10,7 +10,7 @@ create extension if not exists "pgcrypto";
 create table if not exists public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
   full_name   text,
-  role        text not null default 'pending' check (role in ('admin','staff','pending')),
+  role        text not null default 'staff' check (role in ('admin','staff')),
   created_at  timestamptz not null default now()
 );
 
@@ -67,6 +67,9 @@ create table if not exists public.racks (
   description text,
   shelves     int not null default 1 check (shelves > 0),
   positions_per_shelf int not null default 1 check (positions_per_shelf > 0),
+  current_humidity numeric(5,2) check (current_humidity between 0 and 100),
+  current_temperature numeric(5,2),
+  last_environment_check timestamptz,
   created_at  timestamptz not null default now()
 );
 
@@ -174,8 +177,7 @@ create trigger bottles_log_movement after insert or update on public.bottles
 -- ---------------------------------------------------------------
 -- Views: value roll-ups
 -- ---------------------------------------------------------------
-create or replace view public.bottle_details
-with (security_invoker = true) as
+create or replace view public.bottle_details with (security_invoker = true) as
 select
   b.id, b.status, b.purchase_price, b.sale_price,
   (b.sale_price - b.purchase_price) as margin,
@@ -191,8 +193,7 @@ join clients c on c.id = b.client_id
 left join slots s on s.id = b.slot_id
 left join racks r on r.id = s.rack_id;
 
-create or replace view public.client_values
-with (security_invoker = true) as
+create or replace view public.client_values with (security_invoker = true) as
 select
   c.id as client_id, c.name as client_name, c.active,
   count(b.id) filter (where b.status = 'in_storage')            as bottles_in_storage,
@@ -203,8 +204,7 @@ from clients c
 left join bottles b on b.client_id = c.id
 group by c.id, c.name, c.active;
 
-create or replace view public.storage_summary
-with (security_invoker = true) as
+create or replace view public.storage_summary with (security_invoker = true) as
 select
   count(*) filter (where status='in_storage')                 as bottles_in_storage,
   coalesce(sum(purchase_price) filter (where status='in_storage'),0) as purchase_value,
@@ -234,11 +234,8 @@ language sql stable security definer set search_path = public as $$
   select exists (select 1 from profiles where id = auth.uid() and role = 'admin');
 $$;
 
--- SECURITY DEFINER helpers are used only by triggers/RLS, never as public RPCs.
-revoke execute on function public.handle_new_user() from public, anon, authenticated;
-revoke execute on function public.log_movement() from public, anon, authenticated;
-revoke execute on function public.is_staff() from public, anon;
-revoke execute on function public.is_admin() from public, anon;
+revoke all on function public.is_staff() from public;
+revoke all on function public.is_admin() from public;
 grant execute on function public.is_staff() to authenticated;
 grant execute on function public.is_admin() to authenticated;
 
@@ -280,3 +277,59 @@ create policy "labels_staff_delete" on storage.objects for delete to authenticat
 -- First user becomes admin: run once after signing up.
 --   update public.profiles set role='admin' where id = (select id from auth.users order by created_at limit 1);
 -- ---------------------------------------------------------------
+
+-- Security hardening: keep authorization helpers outside the exposed API schema.
+create schema if not exists private;
+revoke all on schema private from public, anon;
+grant usage on schema private to authenticated;
+
+create or replace function private.is_staff() returns boolean
+language sql stable security definer set search_path = public, pg_temp as $$
+  select exists (select 1 from public.profiles where id = (select auth.uid()));
+$$;
+create or replace function private.is_admin() returns boolean
+language sql stable security definer set search_path = public, pg_temp as $$
+  select exists (select 1 from public.profiles where id = (select auth.uid()) and role = 'admin');
+$$;
+revoke all on function private.is_staff() from public, anon;
+revoke all on function private.is_admin() from public, anon;
+grant execute on function private.is_staff() to authenticated;
+grant execute on function private.is_admin() to authenticated;
+
+do $$
+declare t text;
+begin
+  foreach t in array array['clients','wines','racks','slots','bottles','movements'] loop
+    execute format('drop policy if exists "%s_staff_all" on public.%I', t, t);
+    execute format('create policy "%s_staff_all" on public.%I for all to authenticated using (private.is_staff()) with check (private.is_staff())', t, t);
+  end loop;
+end $$;
+drop policy if exists "profiles_read" on public.profiles;
+create policy "profiles_read" on public.profiles for select to authenticated using (private.is_staff());
+drop policy if exists "profiles_admin_write" on public.profiles;
+create policy "profiles_admin_write" on public.profiles for update to authenticated using (private.is_admin()) with check (private.is_admin());
+
+drop policy if exists "labels_staff_write" on storage.objects;
+create policy "labels_staff_write" on storage.objects for insert to authenticated with check (bucket_id = 'labels' and private.is_staff());
+drop policy if exists "labels_staff_update" on storage.objects;
+create policy "labels_staff_update" on storage.objects for update to authenticated using (bucket_id = 'labels' and private.is_staff()) with check (bucket_id = 'labels' and private.is_staff());
+drop policy if exists "labels_staff_delete" on storage.objects;
+create policy "labels_staff_delete" on storage.objects for delete to authenticated using (bucket_id = 'labels' and private.is_staff());
+
+drop function if exists public.is_staff();
+drop function if exists public.is_admin();
+alter function public.handle_new_user() set search_path = public, pg_temp;
+alter function public.generate_slots() set search_path = public, pg_temp;
+alter function public.touch_updated_at() set search_path = public, pg_temp;
+alter function public.release_slot_on_exit() set search_path = public, pg_temp;
+alter function public.log_movement() set search_path = public, pg_temp;
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+revoke all on function public.generate_slots() from public, anon, authenticated;
+revoke all on function public.touch_updated_at() from public, anon, authenticated;
+revoke all on function public.release_slot_on_exit() from public, anon, authenticated;
+revoke all on function public.log_movement() from public, anon, authenticated;
+
+create index if not exists movements_bottle_idx on public.movements(bottle_id);
+create index if not exists movements_from_slot_idx on public.movements(from_slot);
+create index if not exists movements_to_slot_idx on public.movements(to_slot);
+create index if not exists movements_moved_by_idx on public.movements(moved_by);
