@@ -14,7 +14,7 @@ import { Landing } from './pages/Landing'
 import { Terms } from './pages/Terms'
 import { ResetPassword } from './pages/ResetPassword'
 import { AccountPending } from './pages/AccountPending'
-import { AdminAccounts, AdminIntakes, ClientAccount, ClientCollection, ClientIntake, ClientOverview } from './pages/ClientPortal'
+import { AdminAccounts, AdminIntakes, AdminWineSales, ClientAccount, ClientCollection, ClientIntake, ClientOverview, ClientShop } from './pages/ClientPortal'
 import { Brand } from './components/Brand'
 import { Loading } from './components/ui'
 
@@ -27,6 +27,7 @@ const icons = {
   people: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8',
   plus: 'M12 5v14M5 12h14',
   account: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
+  shop: 'M4 8h16l-1 13H5zM8 8a4 4 0 0 1 8 0',
   inbox: 'M4 4h16v14H4zM4 14h5l2 2h2l2-2h5',
 }
 
@@ -35,10 +36,11 @@ function ClientShell() {
   const tabs = [
     { to: '/', label: 'Mi cava', icon: icons.home },
     { to: '/collection', label: 'Colección', icon: icons.bottle },
+    { to: '/shop', label: 'Comprar', icon: icons.shop },
     { to: '/intake', label: 'Añadir', icon: icons.plus },
     { to: '/account', label: 'Cuenta', icon: icons.account },
   ]
-  return <div className="app client-app"><header className="topbar"><div className="brand"><Brand light /></div><div className="actions"><select value={lang} onChange={(e)=>setLang(e.target.value as any)} aria-label={t('language')}><option value="es">ES</option><option value="en">EN</option></select></div></header><main className="main client-main"><Routes><Route path="/" element={<ClientOverview/>}/><Route path="/collection" element={<ClientCollection/>}/><Route path="/intake" element={<ClientIntake/>}/><Route path="/account" element={<ClientAccount/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes></main><nav className="tabbar client-tabbar">{tabs.map((tb)=><NavLink key={tb.to} to={tb.to} end={tb.to==='/' } className={({isActive})=>isActive?'active':''}><Icon d={tb.icon}/>{tb.label}</NavLink>)}</nav></div>
+  return <div className="app client-app"><header className="topbar"><div className="brand"><Brand light /></div><div className="actions"><select value={lang} onChange={(e)=>setLang(e.target.value as any)} aria-label={t('language')}><option value="es">ES</option><option value="en">EN</option></select></div></header><main className="main client-main"><Routes><Route path="/" element={<ClientOverview/>}/><Route path="/collection" element={<ClientCollection/>}/><Route path="/shop" element={<ClientShop/>}/><Route path="/intake" element={<ClientIntake/>}/><Route path="/account" element={<ClientAccount/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes></main><nav className="tabbar client-tabbar">{tabs.map((tb)=><NavLink key={tb.to} to={tb.to} end={tb.to==='/' } className={({isActive})=>isActive?'active':''}><Icon d={tb.icon}/>{tb.label}</NavLink>)}</nav></div>
 }
 
 function Shell() {
@@ -108,6 +110,7 @@ function Shell() {
           <Route path="/racks" element={<Racks />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/intakes" element={<AdminIntakes />} />
+          <Route path="/sales-inventory" element={<AdminWineSales />} />
           <Route path="/admin/accounts" element={profile?.role === 'superadmin' ? <AdminAccounts /> : <Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

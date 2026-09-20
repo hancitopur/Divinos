@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Empty, Field, Loading, PhotoPicker, Thumb } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { money, useT } from '../lib/i18n'
@@ -90,6 +90,50 @@ export function ClientAccount() {
   return <div className="stack client-page"><div><span className="landing-kicker">Cuenta</span><h1>{profile?.full_name||'Mi cuenta'}</h1><p className="muted">{session?.user.email}</p></div><div className="account-plan"><span><small>Plan activo</small><b>{planName(membership?.plan)}</b></span><strong>{membership?.bottle_limit?`${membership.bottle_limit} botellas`:'Cava propia'}</strong></div>
     <div className="card stack"><h2>Entradas enviadas</h2>{requests.length===0?<p className="muted small">Aún no has enviado botellas.</p>:requests.map((r)=><div className="row between" key={r.id}><span>{new Date(r.created_at).toLocaleDateString('es-PR')}</span><span className="badge">{r.status}</span></div>)}</div>
     <Link className="btn secondary" to="/terms">Términos del servicio</Link><button className="btn danger" onClick={()=>supabase.auth.signOut()}>Cerrar sesión</button>
+  </div>
+}
+
+export function ClientShop() {
+  const { membership }=useAuth(); const { lang }=useT(); const [params]=useSearchParams()
+  const [offers,setOffers]=useState<any[]|null>(null); const [age,setAge]=useState(false); const [busy,setBusy]=useState<string|null>(null)
+  const [message,setMessage]=useState<{type:'ok'|'error';text:string}|null>(null)
+  const load=()=>supabase.from('wine_sale_offers').select('*, wines(*)').eq('active',true).order('featured',{ascending:false}).order('member_release_at',{ascending:false}).then(({data})=>setOffers(data??[]))
+  useEffect(()=>{load()},[])
+  useEffect(()=>{
+    if(params.get('paypal')!=='return') return
+    const token=new URLSearchParams(window.location.search).get('token'); if(!token)return
+    setBusy('capture');setMessage(null)
+    supabase.functions.invoke('paypal-capture-wine',{body:{paypalOrderId:token}}).then(({data,error})=>{
+      if(error||data?.error)setMessage({type:'error',text:data?.error||error?.message||'No se pudo confirmar el pago.'})
+      else setMessage({type:'ok',text:`Compra confirmada. ${data.bottles||1} botella(s) ubicada(s) en ${data.locations?.join(', ')||'tu cava'}.`})
+      setBusy(null);load()
+    })
+  },[])
+  const physical=membership?.plan==='reserva'||membership?.plan==='coleccion'
+  return <div className="stack client-page private-shop">
+    <div className="shop-hero"><span className="landing-kicker">Acceso anticipado para miembros</span><h1>Cava Privada</h1><p>Nuevas botellas antes de su venta general. Compras hoy y Divinos las ubica automáticamente en tu cava.</p></div>
+    {message&&<div className={message.type==='ok'?'info':'error'}>{message.text}</div>}
+    {!physical&&<div className="legal-alert"><b>Tu plan Digital no incluye almacenamiento físico.</b> Puedes ver las ofertas; cambia a Reserva o Colección para comprar y guardar automáticamente.</div>}
+    <label className="terms-check shop-age"><input type="checkbox" checked={age} onChange={(e)=>setAge(e.target.checked)} /> Certifico que tengo 18 años o más. La compra es para almacenamiento o recogido autorizado; Divinos no enviará alcohol por correo.</label>
+    {offers===null?<Loading/>:offers.length===0?<div className="client-success"><span>◌</span><h2>Próximamente</h2><p>Las nuevas llegadas aparecerán aquí primero para los miembros de Divinos.</p></div>:<div className="shop-grid">{offers.map((offer)=>{
+      const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines; const left=offer.quantity_available-offer.quantity_reserved-offer.quantity_sold
+      const fee=Math.round(Number(offer.price)*7.5)/100,total=Number(offer.price)+fee
+      return <article className={offer.featured?'featured':''} key={offer.id}><div className="shop-image"><Thumb path={wine?.label_photo_path} label={`${wine?.name||'Vino'} ${wine?.vintage||''}`} />{offer.featured&&<span>Selección Divinos</span>}</div><div className="shop-copy"><small>{[wine?.region,wine?.country].filter(Boolean).join(' · ')}</small><h2>{wine?.name} {wine?.vintage||''}</h2><p>{offer.description||wine?.producer}</p><div className="shop-price"><strong>{money(total,lang)}</strong><span>{money(offer.price,lang)} + {money(fee,lang)} servicio</span></div><div className="row between"><span className="badge">{left} disponible{left===1?'':'s'}</span><button className="btn" disabled={!physical||!age||left<1||busy!==null} onClick={async()=>{setBusy(offer.id);setMessage(null);const {data,error}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId:offer.id,quantity:1,acceptAge:age}});if(error||data?.error){setMessage({type:'error',text:data?.error||error?.message||'No se pudo iniciar el pago.'});setBusy(null)}else window.location.href=data.approval_url}}>{busy===offer.id?'Conectando…':'Comprar con PayPal'}</button></div></div></article>
+    })}</div>}
+    <p className="muted small">La disponibilidad se reserva durante 20 minutos. La botella entra a tu inventario y recibe rack, shelf y posición solamente después de que PayPal confirme el pago.</p>
+  </div>
+}
+
+export function AdminWineSales() {
+  const { session }=useAuth(); const [wines,setWines]=useState<any[]>([]); const [offers,setOffers]=useState<any[]|null>(null)
+  const [form,setForm]=useState({wine_id:'',price:'',quantity_available:'1',description:'',featured:false}); const [error,setError]=useState<string|null>(null)
+  const load=async()=>{const [{data:w},{data:o}]=await Promise.all([supabase.from('wines').select('id,name,vintage,producer').order('name'),supabase.from('wine_sale_offers').select('*, wines(name,vintage)').order('created_at',{ascending:false})]);setWines(w??[]);setOffers(o??[]);if(!form.wine_id&&w?.[0])setForm(f=>({...f,wine_id:w[0].id}))}
+  useEffect(()=>{load()},[])
+  return <div className="stack"><div className="row between"><div><span className="landing-kicker">Inventario de venta</span><h1>Cava Privada</h1></div><Link className="btn secondary" to="/wines">Catálogo</Link></div>
+    <form className="card stack" onSubmit={async(e)=>{e.preventDefault();setError(null);const {error}=await supabase.from('wine_sale_offers').insert({wine_id:form.wine_id,price:Number(form.price),quantity_available:Number(form.quantity_available),description:form.description||null,featured:form.featured,created_by:session?.user.id});if(error)setError(error.message);else{setForm(f=>({...f,price:'',quantity_available:'1',description:'',featured:false}));load()}}}>
+      <h2>Publicar nueva llegada</h2><Field label="Vino"><select required value={form.wine_id} onChange={e=>setForm({...form,wine_id:e.target.value})}>{wines.map(w=><option key={w.id} value={w.id}>{w.name} {w.vintage||''} · {w.producer||''}</option>)}</select></Field><div className="grid2"><Field label="Precio por botella"><input required type="number" min="1" step="0.01" value={form.price} onChange={e=>setForm({...form,price:e.target.value})}/></Field><Field label="Cantidad disponible"><input required type="number" min="1" value={form.quantity_available} onChange={e=>setForm({...form,quantity_available:e.target.value})}/></Field></div><Field label="Descripción"><textarea rows={2} value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/></Field><label className="terms-check"><input type="checkbox" checked={form.featured} onChange={e=>setForm({...form,featured:e.target.checked})}/> Destacar esta llegada</label>{error&&<div className="error">{error}</div>}<button className="btn">Publicar para miembros</button>
+    </form>
+    <h2>Ofertas</h2>{offers===null?<Loading/>:offers.length===0?<Empty/>:<div className="list">{offers.map(o=>{const w=Array.isArray(o.wines)?o.wines[0]:o.wines;return <div className="item" key={o.id}><div className="body"><b>{w?.name} {w?.vintage||''}</b><div className="meta">${o.price} · {o.quantity_sold} vendidas · {o.quantity_reserved} reservadas · {o.quantity_available} total</div></div><button className="btn secondary sm" onClick={async()=>{await supabase.from('wine_sale_offers').update({active:!o.active}).eq('id',o.id);load()}}>{o.active?'Pausar':'Activar'}</button></div>})}</div>}
   </div>
 }
 

@@ -467,6 +467,34 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .account-plan > strong { color: var(--gold); font-size: .8rem; }
 @media (min-width:760px) { .client-collection-grid,.client-bottle-strip { grid-template-columns:1fr 1fr; } }
 
+/* Members-first wine shop */
+.shop-hero { padding: 24px 20px; color:#fff; background:linear-gradient(135deg,var(--wine-dark),var(--wine)); border-radius:22px; }
+.shop-hero h1 { margin:7px 0 9px; font:500 clamp(2.5rem,10vw,4rem)/1 Georgia,serif; }
+.shop-hero p { max-width:620px; margin:0; color:rgba(255,255,255,.7); }
+.shop-age { padding:14px 16px; background:#fff; border:1px solid var(--line); border-radius:14px; }
+.shop-grid { display:grid; grid-template-columns:1fr; gap:12px; }
+.shop-grid article { overflow:hidden; display:grid; grid-template-columns:110px minmax(0,1fr); background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); }
+.shop-grid article.featured { border:2px solid var(--gold); }
+.shop-image { position:relative; min-height:190px; background:var(--cream); }
+.shop-image .thumb { width:100%; height:100%; border-radius:0; }
+.shop-image > span { position:absolute; left:7px; right:7px; top:7px; padding:4px 5px; color:var(--wine-dark); background:var(--gold); border-radius:7px; text-align:center; font-size:.57rem; font-weight:850; text-transform:uppercase; }
+.shop-copy { min-width:0; padding:16px; display:flex; flex-direction:column; }
+.shop-copy > small { color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-size:.62rem; }
+.shop-copy h2 { margin:5px 0 1px; font:500 1.35rem/1.05 Georgia,serif; }
+.shop-copy > p { margin:3px 0 12px; color:var(--muted); font-size:.75rem; }
+.shop-price { margin-top:auto; display:flex; flex-direction:column; }
+.shop-price strong { color:var(--wine); font:600 1.55rem Georgia,serif; }
+.shop-price span { color:var(--muted); font-size:.65rem; }
+.shop-copy .row { margin-top:12px; align-items:flex-end; }
+.shop-copy .btn { min-height:42px; padding:8px 11px; font-size:.75rem; }
+@media (min-width:700px) { .shop-grid { grid-template-columns:1fr 1fr; } }
+@media (max-width:390px) {
+  .shop-grid article { grid-template-columns:92px minmax(0,1fr); }
+  .shop-copy { padding:13px 11px; }
+  .shop-copy .row { align-items:stretch; flex-direction:column; }
+  .shop-copy .btn { width:100%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

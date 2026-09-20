@@ -4,6 +4,7 @@ import { useT } from '../lib/i18n'
 import type { Wine, WineType } from '../lib/types'
 import { Empty, Field, Loading, PhotoPicker, Sheet, Thumb } from '../components/ui'
 import { importWineImage, searchWineImages, type WineImageResult } from '../lib/wineImages'
+import { Link } from 'react-router-dom'
 
 const TYPES: WineType[] = ['red', 'white', 'rose', 'sparkling', 'dessert', 'fortified', 'other']
 
@@ -31,7 +32,7 @@ export function Wines() {
 
   return (
     <div className="stack">
-      <h1>{t('wines')}</h1>
+      <div className="row between"><h1>{t('wines')}</h1><Link className="btn secondary sm" to="/sales-inventory">Ventas</Link></div>
       <input className="search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
       {rows === null ? <Loading /> : list.length === 0 ? <Empty /> : (
         <div className="list">
