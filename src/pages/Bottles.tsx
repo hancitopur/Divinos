@@ -56,7 +56,7 @@ export function Bottles() {
         <div className="list">
           {list.map((b) => (
             <div className="item" key={b.id} onClick={() => setEditing(b)}>
-              <Thumb path={b.label_photo_path} label={`${b.wine_name} ${b.vintage ?? ''}`} />
+              <Thumb path={b.label_photo_path} />
               <div className="body">
                 <div className="title">{b.wine_name}{b.vintage ? ` ${b.vintage}` : ''}</div>
                 <div className="meta">{b.producer ? b.producer + ' · ' : ''}{b.client_name}</div>
@@ -70,7 +70,7 @@ export function Bottles() {
           ))}
         </div>
       )}
-      <button className="fab" aria-label={t('newBottle')} onClick={() => setAdding(true)}>+</button>
+      <button className="fab" onClick={() => setAdding(true)}>+</button>
       {editing && <BottleForm bottle={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
       {adding && <AddBottles onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load() }} />}
     </div>
