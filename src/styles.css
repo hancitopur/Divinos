@@ -471,6 +471,7 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .shop-hero { padding: 24px 20px; color:#fff; background:linear-gradient(135deg,var(--wine-dark),var(--wine)); border-radius:22px; }
 .shop-hero h1 { margin:7px 0 9px; font:500 clamp(2.5rem,10vw,4rem)/1 Georgia,serif; }
 .shop-hero p { max-width:620px; margin:0; color:rgba(255,255,255,.7); }
+.shop-hero .btn { width:max-content; margin-top:16px; color:var(--wine-dark); background:var(--gold); border-color:var(--gold); }
 .shop-age { padding:14px 16px; background:#fff; border:1px solid var(--line); border-radius:14px; }
 .shop-grid { display:grid; grid-template-columns:1fr; gap:12px; }
 .shop-grid article { overflow:hidden; display:grid; grid-template-columns:110px minmax(0,1fr); background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); }
@@ -487,6 +488,11 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .shop-price span { color:var(--muted); font-size:.65rem; }
 .shop-copy .row { margin-top:12px; align-items:flex-end; }
 .shop-copy .btn { min-height:42px; padding:8px 11px; font-size:.75rem; }
+.member-sell .item { cursor:default; }
+.member-sell .item .thumb { width:50px; height:66px; }
+.marketplace-review { cursor:default; flex-wrap:wrap; }
+.marketplace-review .body { flex:1 1 260px; }
+.marketplace-review > input { width:120px; min-width:0; }
 .demo-shop-preview { padding:24px; color:#fff; background:var(--wine-dark); border-radius:22px; }
 .demo-shop-preview .demo-section-head p { max-width:650px; margin:6px 0 0; color:rgba(255,255,255,.62); }
 .demo-shop-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -503,6 +509,11 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
   .shop-copy { padding:13px 11px; }
   .shop-copy .row { align-items:stretch; flex-direction:column; }
   .shop-copy .btn { width:100%; }
+  .shop-hero .btn { width:100%; }
+  .member-sell .item { align-items:flex-start; flex-wrap:wrap; }
+  .member-sell .item .body { flex:1 1 calc(100% - 62px); }
+  .member-sell .item > .badge { margin-left:62px; }
+  .marketplace-review > input,.marketplace-review > .btn { width:100%; }
 }
 @media (max-width:600px) { .demo-shop-preview{padding:19px 14px}.demo-shop-preview .demo-section-head{align-items:flex-start;flex-direction:column}.demo-shop-grid{grid-template-columns:1fr}.demo-shop-grid article{grid-template-columns:72px minmax(0,1fr)} }
 

@@ -88,8 +88,8 @@ export function Demo() {
         </section>
 
         <section className="demo-shop-preview">
-          <div className="demo-section-head"><div><span className="demo-kicker">Nuevo · acceso anticipado</span><h2>Cava Privada para miembros</h2><p>Las nuevas llegadas aparecen primero aquí. PayPal confirma la compra y Divinos asigna la botella al próximo espacio disponible.</p></div><Link className="btn" to="/login?plan=reserva">Quiero acceso</Link></div>
-          <div className="demo-shop-grid">{inventory.slice(3,5).map((wine,index)=><article key={wine.name}><LabelArtwork wine={wine}/><div><small>{wine.origin}</small><h3>{wine.name} {wine.vintage}</h3><p>{index===0?'12 botellas disponibles':'6 botellas disponibles'}</p><strong>{index===0?'$342.93':'$310.68'} <small>con servicio</small></strong><span>Compra → inventario → rack asignado</span></div></article>)}</div>
+          <div className="demo-section-head"><div><span className="demo-kicker">Nuevo · acceso anticipado</span><h2>Compra y vende dentro de Divinos</h2><p>Encuentra nuevas llegadas de Divinos o botellas verificadas de otros miembros. Cada venta entre miembros requiere aprobación antes de publicarse.</p></div><Link className="btn" to="/login?plan=reserva">Quiero acceso</Link></div>
+          <div className="demo-shop-grid">{inventory.slice(3,5).map((wine,index)=><article key={wine.name}><LabelArtwork wine={wine}/><div><small>{index===0?'INVENTARIO DIVINOS':'COLECCIÓN DE MIEMBRO'} · {wine.origin}</small><h3>{wine.name} {wine.vintage}</h3><p>{index===0?'12 botellas disponibles':'1 botella verificada'}</p><strong>{index===0?'$342.93':'$310.68'} <small>con servicio</small></strong><span>{index===0?'Compra → inventario → rack asignado':'Miembro solicita → Divinos aprueba → se publica'}</span></div></article>)}</div>
         </section>
 
         <section className="demo-intake">

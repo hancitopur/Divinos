@@ -14,7 +14,7 @@ import { Landing } from './pages/Landing'
 import { Terms } from './pages/Terms'
 import { ResetPassword } from './pages/ResetPassword'
 import { AccountPending } from './pages/AccountPending'
-import { AdminAccounts, AdminIntakes, AdminWineSales, ClientAccount, ClientCollection, ClientIntake, ClientOverview, ClientShop } from './pages/ClientPortal'
+import { AdminAccounts, AdminIntakes, AdminWineSales, ClientAccount, ClientCollection, ClientIntake, ClientOverview, ClientSell, ClientShop } from './pages/ClientPortal'
 import { Brand } from './components/Brand'
 import { Loading } from './components/ui'
 
@@ -40,7 +40,7 @@ function ClientShell() {
     { to: '/intake', label: 'Solicitar', icon: icons.plus },
     { to: '/account', label: 'Cuenta', icon: icons.account },
   ]
-  return <div className="app client-app"><header className="topbar"><div className="brand"><Brand light /></div><div className="actions"><select value={lang} onChange={(e)=>setLang(e.target.value as any)} aria-label={t('language')}><option value="es">ES</option><option value="en">EN</option></select></div></header><main className="main client-main"><Routes><Route path="/" element={<ClientOverview/>}/><Route path="/collection" element={<ClientCollection/>}/><Route path="/shop" element={<ClientShop/>}/><Route path="/intake" element={<ClientIntake/>}/><Route path="/account" element={<ClientAccount/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes></main><nav className="tabbar client-tabbar">{tabs.map((tb)=><NavLink key={tb.to} to={tb.to} end={tb.to==='/' } className={({isActive})=>isActive?'active':''}><Icon d={tb.icon}/>{tb.label}</NavLink>)}</nav></div>
+  return <div className="app client-app"><header className="topbar"><div className="brand"><Brand light /></div><div className="actions"><select value={lang} onChange={(e)=>setLang(e.target.value as any)} aria-label={t('language')}><option value="es">ES</option><option value="en">EN</option></select></div></header><main className="main client-main"><Routes><Route path="/" element={<ClientOverview/>}/><Route path="/collection" element={<ClientCollection/>}/><Route path="/shop" element={<ClientShop/>}/><Route path="/sell" element={<ClientSell/>}/><Route path="/intake" element={<ClientIntake/>}/><Route path="/account" element={<ClientAccount/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes></main><nav className="tabbar client-tabbar">{tabs.map((tb)=><NavLink key={tb.to} to={tb.to} end={tb.to==='/' } className={({isActive})=>isActive?'active':''}><Icon d={tb.icon}/>{tb.label}</NavLink>)}</nav></div>
 }
 
 function Shell() {
