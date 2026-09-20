@@ -58,7 +58,7 @@ export function Login() {
           setBusy(false); if(error)setErr(error.message);else setMsg('Te enviamos un enlace para cambiar tu contraseña.')
         }}>Olvidé mi contraseña</button>}
         <div className="auth-divider"><span>o</span></div>
-        <Link className="btn demo-entry" to="/demo">Ver demo para ventas</Link>
+        <Link className="btn demo-entry" to="/demo">Ver cómo funciona el servicio</Link>
         <Link className="small muted" style={{ textAlign: 'center' }} to="/">Volver a divinospr.com</Link>
         <div className="row" style={{ justifyContent: 'center' }}>
           <select value={lang} onChange={(e) => setLang(e.target.value as any)} style={{ border: '1px solid var(--line)', borderRadius: 8, padding: '4px 8px', background: '#fff' }}>

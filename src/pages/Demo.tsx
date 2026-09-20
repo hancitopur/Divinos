@@ -42,7 +42,7 @@ export function Demo() {
       <header className="demo-topbar">
         <div className="demo-brand"><Brand light /></div>
         <div className="row">
-          <span className="demo-pill">Demo interactivo</span>
+          <span className="demo-pill">Cómo funciona</span>
           <Link className="btn sm demo-login" to="/login">Entrar</Link>
         </div>
       </header>
