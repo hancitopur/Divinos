@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     if (seen) return reply({ received: true, duplicate: true })
     await admin.from('payment_events').insert({ id:event.id, event_type:event.event_type, resource_id:event.resource?.id })
 
-    const subscriptionId = event.resource?.id || event.resource?.billing_agreement_id
+    const subscriptionId = event.resource?.billing_agreement_id || event.resource?.id
     const userId = event.resource?.custom_id
     let status: string | null = null
     if (['BILLING.SUBSCRIPTION.ACTIVATED','PAYMENT.SALE.COMPLETED'].includes(event.event_type)) status = 'active'
@@ -40,6 +40,15 @@ Deno.serve(async (req) => {
     if (event.event_type === 'BILLING.SUBSCRIPTION.PAYMENT.FAILED') status = 'past_due'
 
     if (status && subscriptionId) {
+      if (status === 'active') {
+        const { data: agreement } = await admin.from('service_agreements').select('id,user_id').eq('paypal_subscription_id', subscriptionId).maybeSingle()
+        const { data: onboarding } = agreement ? await admin.from('customer_onboarding').select('legal_name,phone,address_line1,city,region,postal_code').eq('user_id', agreement.user_id).maybeSingle() : { data: null }
+        const complete = onboarding && ['legal_name','phone','address_line1','city','region','postal_code'].every((field) => String((onboarding as any)[field] || '').trim())
+        if (!agreement || !complete) {
+          await admin.from('payment_events').update({ status:'manual_review', processed_at:new Date().toISOString() }).eq('id',event.id)
+          return reply({ received:true, activated:false })
+        }
+      }
       const changes: Record<string, unknown> = { status, paypal_payer_id:event.resource?.subscriber?.payer_id || null, current_period_end:event.resource?.billing_info?.next_billing_time || null }
       if (status === 'active') changes.activated_at = new Date().toISOString()
       const query = admin.from('memberships').update(changes)

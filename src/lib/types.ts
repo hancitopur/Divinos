@@ -6,6 +6,11 @@ export type WineType = 'red' | 'white' | 'rose' | 'sparkling' | 'dessert' | 'for
 
 export interface Profile { id: string; full_name: string | null; role: Role; terms_version?: string | null; terms_accepted_at?: string | null }
 
+export interface CustomerOnboarding {
+  user_id: string; legal_name: string; phone: string; address_line1: string; address_line2: string | null
+  city: string; region: string; postal_code: string; updated_at?: string
+}
+
 export interface Membership {
   user_id: string; client_id: string; plan: MembershipPlan; status: MembershipStatus
   bottle_limit: number | null; payment_provider: 'paypal'; paypal_subscription_id: string | null

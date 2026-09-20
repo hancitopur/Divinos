@@ -394,10 +394,21 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .pending-shell { min-height: 100dvh; color: #fff; background: var(--wine-dark); }
 .pending-head { min-height: 76px; padding: calc(14px + env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 14px max(20px,env(safe-area-inset-left)); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.12); }
 .pending-head .brandmark img { width: 132px; }
-.pending-main { width: min(100%,650px); margin: 0 auto; padding: 60px 20px 90px; }
+.pending-main { width: min(100%,720px); margin: 0 auto; padding: 60px 20px 90px; }
 .pending-main h1 { margin: 10px 0 14px; font: 500 clamp(2.5rem,8vw,4rem)/1 Georgia,serif; }
 .pending-main > p { color: rgba(255,255,255,.65); font-size: 1.02rem; }
-.pending-plans { margin: 32px 0 20px; display: grid; gap: 8px; }
+.pending-form { margin-top: 28px; display: grid; gap: 14px; }
+.pending-section { padding: 18px; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.13); border-radius: 18px; }
+.pending-step { margin-bottom: 18px; display: flex; align-items: center; gap: 11px; }
+.pending-step > b { width: 30px; height: 30px; display: grid; place-items: center; color: var(--wine-dark); background: var(--gold); border-radius: 50%; }
+.pending-step > span { display: flex; flex-direction: column; }
+.pending-step small { margin-top: 2px; color: rgba(255,255,255,.5); }
+.pending-fields { display: grid; gap: 12px; }
+.pending-fields label { color: rgba(255,255,255,.72); }
+.pending-fields input { min-height: 48px; color: #fff; background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.18); }
+.pending-fields input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(199,164,91,.18); }
+.pending-address-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.25fr); gap: 10px; }
+.pending-plans { margin: 0; display: grid; gap: 8px; }
 .pending-plans button { min-height: 78px; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #fff; text-align: left; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16); border-radius: 14px; cursor: pointer; }
 .pending-plans button.selected { color: var(--wine-dark); background: #f1e5c9; border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
 .pending-plans button > span { display: flex; flex-direction: column; }
@@ -406,7 +417,13 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .pending-plans button > strong small { font: 600 .65rem sans-serif; }
 .pending-main .terms-check { color: rgba(255,255,255,.68); }
 .pending-main .terms-check a { color: var(--gold); }
+.pending-consent { display: grid; gap: 15px; }
+.pending-consent .pending-step { margin-bottom: 2px; }
+.charge-summary { padding: 14px 15px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 3px 12px; color: var(--wine-dark); background: #f1e5c9; border-radius: 12px; }
+.charge-summary strong { font: 600 1.15rem Georgia,serif; }
+.charge-summary small { grid-column: 1 / -1; opacity: .65; }
 .pending-pay { width: 100%; min-height: 54px; margin-top: 20px; background: #ffc439; color: #172c45; border-radius: 14px; }
+.pending-pay:disabled { opacity: .5; cursor: not-allowed; }
 .pending-security { margin-top: 18px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; color: rgba(255,255,255,.5); font-size: .67rem; }
 .client-app { background: #f7f2ed; }
 .client-main { max-width: 1040px; }

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Brand } from '../components/Brand'
+import { Field } from '../components/ui'
 import { supabase } from '../lib/supabase'
-import type { Membership, MembershipPlan } from '../lib/types'
+import type { CustomerOnboarding, Membership, MembershipPlan } from '../lib/types'
 
 const plans: Array<{ id: MembershipPlan; name: string; price: number; detail: string }> = [
   { id: 'digital', name: 'Digital', price: 9, detail: 'Inventario digital para tu propia cava' },
@@ -10,33 +11,88 @@ const plans: Array<{ id: MembershipPlan; name: string; price: number; detail: st
   { id: 'coleccion', name: 'Colección', price: 79, detail: 'Aplicación + hasta 144 botellas' },
 ]
 
+type Details = Omit<CustomerOnboarding, 'user_id' | 'updated_at'>
+const emptyDetails: Details = { legal_name: '', phone: '', address_line1: '', address_line2: '', city: '', region: 'PR', postal_code: '' }
+
 export function AccountPending({ membership }: { membership: Membership | null }) {
   const [params] = useSearchParams()
   const requested = params.get('plan') as MembershipPlan | null
   const [selected, setSelected] = useState<MembershipPlan>(membership?.plan ?? (plans.some((p) => p.id === requested) ? requested! : 'reserva'))
+  const [details, setDetails] = useState<Details>(emptyDetails)
+  const [acceptedLegal, setAcceptedLegal] = useState(false)
+  const [acceptedCharges, setAcceptedCharges] = useState(false)
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null)
   const status = membership?.status
+  const plan = plans.find((item) => item.id === selected)!
+
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return
+      const { data: saved } = await supabase.from('customer_onboarding').select('*').eq('user_id', data.user.id).maybeSingle()
+      if (saved) setDetails({
+        legal_name: saved.legal_name ?? '', phone: saved.phone ?? '', address_line1: saved.address_line1 ?? '',
+        address_line2: saved.address_line2 ?? '', city: saved.city ?? '', region: saved.region ?? 'PR', postal_code: saved.postal_code ?? '',
+      })
+    })
+  }, [])
+
+  const update = (key: keyof Details, value: string) => setDetails((current) => ({ ...current, [key]: value }))
+
   return <div className="pending-shell">
     <header className="pending-head"><Brand light /><button className="btn secondary sm" onClick={() => supabase.auth.signOut()}>Salir</button></header>
     <main className="pending-main">
       <span className="landing-kicker">Tu cuenta Divinos</span>
-      <h1>{status === 'approval_pending' ? 'Termina la aprobación en PayPal.' : 'Activa tu membresía.'}</h1>
-      <p>Tu cuenta permanece protegida y sin acceso al inventario hasta que PayPal confirme una suscripción activa.</p>
-      <div className="pending-plans">
-        {plans.map((plan) => <button type="button" className={selected === plan.id ? 'selected' : ''} key={plan.id} onClick={() => setSelected(plan.id)}>
-          <span><b>{plan.name}</b><small>{plan.detail}</small></span><strong>${plan.price}<small>/mes</small></strong>
-        </button>)}
-      </div>
-      <label className="terms-check"><input type="checkbox" checked readOnly /> Acepté los <Link to="/terms">términos del servicio</Link> al crear mi cuenta.</label>
-      {error && <div className="error">{error}</div>}
-      <button className="btn pending-pay" disabled={busy} onClick={async () => {
-        setBusy(true); setError(null)
-        const { data, error } = await supabase.functions.invoke('paypal-subscribe', { body: { plan: selected } })
-        if (error || !data?.approval_url) setError(data?.error || error?.message || 'PayPal todavía no está configurado.');
-        else window.location.assign(data.approval_url)
-        setBusy(false)
-      }}>{busy ? 'Conectando con PayPal…' : `Continuar con PayPal · $${plans.find((p) => p.id === selected)?.price}/mes`}</button>
-      <div className="pending-security"><span>🔒 Cuenta privada</span><span>✓ Cancelación desde PayPal</span><span>✓ Acceso solo con pago activo</span></div>
+      <h1>{status === 'approval_pending' ? 'Termina la aprobación en PayPal.' : 'Completa y activa tu membresía.'}</h1>
+      <p>Tu información, aceptación y pago son obligatorios. No tendrás acceso al inventario hasta que PayPal confirme la suscripción.</p>
+      <form className="pending-form" onSubmit={async (event) => {
+        event.preventDefault(); setBusy(true); setError(null)
+        try {
+          if (!acceptedLegal || !acceptedCharges) throw new Error('Debes aceptar el acuerdo legal y la divulgación de cargos.')
+          const { data: auth } = await supabase.auth.getUser()
+          if (!auth.user) throw new Error('Tu sesión expiró. Entra nuevamente.')
+          const clean = Object.fromEntries(Object.entries(details).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])) as Details
+          const { error: saveError } = await supabase.from('customer_onboarding').upsert({ user_id: auth.user.id, ...clean }, { onConflict: 'user_id' })
+          if (saveError) throw saveError
+          const { data, error: paymentError } = await supabase.functions.invoke('paypal-subscribe', { body: { plan: selected, acceptLegal: true, acceptCharges: true } })
+          if (paymentError || !data?.approval_url) throw new Error(data?.error || paymentError?.message || 'PayPal todavía no está configurado.')
+          window.location.assign(data.approval_url)
+        } catch (ex: any) { setError(ex.message) } finally { setBusy(false) }
+      }}>
+        <section className="pending-section">
+          <div className="pending-step"><b>1</b><span><strong>Información del cliente</strong><small>Necesaria para el acuerdo y la facturación.</small></span></div>
+          <div className="pending-fields">
+            <Field label="Nombre legal completo"><input value={details.legal_name} onChange={(e)=>update('legal_name', e.target.value)} required autoComplete="name" /></Field>
+            <Field label="Teléfono"><input type="tel" value={details.phone} onChange={(e)=>update('phone', e.target.value)} required minLength={7} autoComplete="tel" /></Field>
+            <Field label="Dirección física"><input value={details.address_line1} onChange={(e)=>update('address_line1', e.target.value)} required autoComplete="street-address" /></Field>
+            <Field label="Apartamento o unidad (opcional)"><input value={details.address_line2 ?? ''} onChange={(e)=>update('address_line2', e.target.value)} /></Field>
+            <Field label="Ciudad"><input value={details.city} onChange={(e)=>update('city', e.target.value)} required autoComplete="address-level2" /></Field>
+            <div className="pending-address-row">
+              <Field label="Estado / territorio"><input value={details.region} onChange={(e)=>update('region', e.target.value.toUpperCase())} required maxLength={3} autoComplete="address-level1" /></Field>
+              <Field label="Código postal"><input value={details.postal_code} onChange={(e)=>update('postal_code', e.target.value)} required pattern="[0-9]{5}(-[0-9]{4})?" inputMode="numeric" autoComplete="postal-code" /></Field>
+            </div>
+          </div>
+        </section>
+
+        <section className="pending-section">
+          <div className="pending-step"><b>2</b><span><strong>Selecciona tu servicio</strong><small>Las funciones de la cuenta son iguales; cambia la capacidad contratada.</small></span></div>
+          <div className="pending-plans">
+            {plans.map((item) => <button type="button" className={selected === item.id ? 'selected' : ''} key={item.id} onClick={() => setSelected(item.id)}>
+              <span><b>{item.name}</b><small>{item.detail}</small></span><strong>${item.price}<small>/mes</small></strong>
+            </button>)}
+          </div>
+        </section>
+
+        <section className="pending-section pending-consent">
+          <div className="pending-step"><b>3</b><span><strong>Acuerdo y cargos</strong><small>Ambas aceptaciones son obligatorias antes de PayPal.</small></span></div>
+          <label className="terms-check"><input type="checkbox" checked={acceptedLegal} onChange={(e)=>setAcceptedLegal(e.target.checked)} required /> Leí y acepto el <Link to="/terms" target="_blank">acuerdo legal y los términos y condiciones</Link>.</label>
+          <label className="terms-check"><input type="checkbox" checked={acceptedCharges} onChange={(e)=>setAcceptedCharges(e.target.checked)} required /> Autorizo el cargo recurrente de <strong>${plan.price}.00/mes</strong> mediante PayPal, más impuestos aplicables. Los servicios adicionales solo se cobrarán si se informan y acepto su importe.</label>
+          <div className="charge-summary"><span>Cargo mensual del plan {plan.name}</span><strong>${plan.price}.00 USD</strong><small>Renovación automática. Puedes cancelar desde PayPal.</small></div>
+        </section>
+
+        {error && <div className="error">{error}</div>}
+        <button className="btn pending-pay" disabled={busy || !acceptedLegal || !acceptedCharges}>{busy ? 'Validando y conectando…' : `Aceptar y continuar a PayPal · $${plan.price}/mes`}</button>
+      </form>
+      <div className="pending-security"><span>🔒 Información privada</span><span>✓ Pago verificado por PayPal</span><span>✓ Acceso solo con cuenta pagada</span></div>
       {params.get('payment') === 'return' && <div className="info">PayPal está confirmando tu suscripción. Actualiza esta página en unos segundos.</div>}
     </main>
   </div>

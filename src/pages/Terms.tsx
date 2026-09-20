@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 
-export const TERMS_VERSION = '2026-09-20-draft'
+export const TERMS_VERSION = '2026-09-20-v2-draft'
+export const BILLING_VERSION = '2026-09-20-v1'
 
 export function Terms() {
   return (
@@ -14,8 +15,9 @@ export function Terms() {
         <p>El pago reserva o activa el servicio. La aceptación física de botellas puede requerir que el cliente complete y firme la orden y este acuerdo. El inventario, la orden y estas condiciones forman conjuntamente el contrato.</p>
         <h2>1. Servicio e inventario</h2>
         <p>Divinos almacenará los vinos aceptados en el espacio contratado. El cliente conserva la propiedad. El inventario digital puede incluir fotografías, marca, añada, cantidad, tamaño, valor informado y condición aparente; no certifica autenticidad, procedencia ni calidad interna.</p>
-        <h2>2. Pagos, acceso y planes</h2>
-        <p>Los cargos recurrentes vencen según la orden. El acceso depende de que la cuenta permanezca activa. Digital, Reserva y Colección incluyen las mismas herramientas digitales; Reserva y Colección añaden capacidad física según el plan contratado.</p>
+        <h2>2. Pagos, cargos, acceso y planes</h2>
+        <p>El cargo mensual base es el precio del plan seleccionado y se renueva automáticamente mediante PayPal hasta su cancelación. Podrán añadirse los impuestos exigidos por ley. Cualquier manejo, entrega, recogido, seguro opcional u otro servicio adicional se cobrará únicamente si su importe se divulga y el cliente lo acepta antes de prestarse.</p>
+        <p>El acceso depende de que la cuenta permanezca pagada y activa. Digital, Reserva y Colección incluyen las mismas herramientas digitales; Reserva y Colección añaden capacidad física según el plan contratado.</p>
         <h2>3. Conservación y seguridad</h2>
         <p>Divinos aplicará cuidado razonable, control de temperatura, videovigilancia y controles de acceso según el servicio. El vino puede afectarse por envejecimiento natural, cierres defectuosos, humedad, luz, vibración o defectos de fabricación. El cliente debe informar por escrito cualquier botella de valor excepcional.</p>
         <h2>4. Seguro y responsabilidad</h2>
@@ -26,7 +28,7 @@ export function Terms() {
         <p>El cliente podrá terminar el servicio conforme a la orden, pagando el balance y retirando sus bienes. Ante emergencia o riesgo de pérdida, Divinos podrá mover temporalmente los bienes a un lugar seguro. Este acuerdo se regirá por las leyes de Puerto Rico.</p>
         <h2>7. Privacidad y cuenta digital</h2>
         <p>Cada cliente puede consultar únicamente su propia colección. No debe compartir credenciales. Divinos utiliza proveedores de infraestructura y pago para operar la cuenta, conservar fotografías y procesar la membresía.</p>
-        <p className="muted small">Versión {TERMS_VERSION}. La aceptación electrónica registra la versión y fecha aceptada.</p>
+        <p className="muted small">Términos {TERMS_VERSION} · Divulgación de cargos {BILLING_VERSION}. La aceptación electrónica registra la versión, plan, importe y fecha aceptada.</p>
       </main>
     </div>
   )
