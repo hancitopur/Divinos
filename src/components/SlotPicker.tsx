@@ -69,7 +69,11 @@ export function SlotPicker({ value, currentBottleId, onPick, readOnly, visual = 
       </Field>
       {rackId && (
         <>
-          <div className={`small ${visual ? 'cellar-meta' : 'muted'}`}>{used}/{slots.length} {t('occupied')} · {visual ? t('visualHint') : readOnly ? t('legend') : t('selectSlot')}</div>
+          {visual ? <div className="cellar-summary">
+            <div><strong>{used}</strong><span> de {slots.length} {t('occupied')}</span></div>
+            <i><em style={{ width: `${slots.length ? Math.round((used / slots.length) * 100) : 0}%` }} /></i>
+            <small>{t('visualHint')}</small>
+          </div> : <div className="small muted">{used}/{slots.length} {t('occupied')} · {readOnly ? t('legend') : t('selectSlot')}</div>}
           <div className={visual ? 'cellar-rack' : 'rackmap'}>
             {byShelf.map(([shelf, ss]) => (
               <div className={visual ? 'cellar-shelf' : 'shelfrow'} key={shelf}>

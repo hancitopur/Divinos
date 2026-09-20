@@ -8,7 +8,7 @@ const dict = {
     signIn: 'Iniciar sesión', signUp: 'Crear cuenta', signOut: 'Salir', email: 'Correo', password: 'Contraseña',
     fullName: 'Nombre', haveAccount: '¿Ya tienes cuenta?', noAccount: '¿No tienes cuenta?',
     checkEmail: 'Revisa tu correo para confirmar la cuenta.', notConfigured: 'Falta configurar VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.',
-    dashboard: 'Resumen', bottles: 'Botellas', wines: 'Vinos', racks: 'Racks', clients: 'Clientes',
+    dashboard: 'Resumen', bottles: 'Botellas', wines: 'Vinos', racks: 'Cava', clients: 'Clientes',
     inStorage: 'En storage', purchaseValue: 'Valor de compra', saleValue: 'Valor de venta', margin: 'Margen',
     occupancy: 'Ocupación', slots: 'espacios', valueByClient: 'Valor por cliente', client: 'Cliente',
     search: 'Buscar…', all: 'Todos', add: 'Agregar', save: 'Guardar', cancel: 'Cancelar', delete: 'Eliminar', edit: 'Editar',

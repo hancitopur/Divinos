@@ -30,10 +30,10 @@ export function Racks() {
       </div>
       <div className="rack-view-switch" role="group" aria-label={t('racks')}>
         <button type="button" className={view === 'cellar' ? 'active' : ''} onClick={() => setView('cellar')} aria-pressed={view === 'cellar'}>
-          <span aria-hidden="true">▤</span> {t('cellarView')}
+          {t('cellarView')}
         </button>
         <button type="button" className={view === 'slots' ? 'active' : ''} onClick={() => setView('slots')} aria-pressed={view === 'slots'}>
-          <span aria-hidden="true">▦</span> {t('slotView')}
+          {t('slotView')}
         </button>
       </div>
       <div className={view === 'cellar' ? 'cellar-card' : 'card'}>
