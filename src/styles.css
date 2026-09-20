@@ -94,6 +94,7 @@ h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
 .auth { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .auth .card { width: 100%; max-width: 380px; }
 .auth .logo { width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 10px; display: block; }
+.auth-intro{text-align:center;padding:4px 0}.auth-link{border:0;background:transparent;color:var(--wine);font-weight:650;cursor:pointer;padding:4px}.reset-card{text-align:center}.reset-card form{text-align:left}.success-panel{background:#e8f3ec;color:var(--ok);padding:14px;border-radius:12px;display:flex;flex-direction:column;gap:4px}
 .error { background: #f5e5e7; color: var(--bad); border-radius: 10px; padding: 8px 12px; font-size: .9rem; }
 .info { background: #eef3fb; color: #2c4d8a; border-radius: 10px; padding: 8px 12px; font-size: .9rem; }
 .table { width: 100%; border-collapse: collapse; font-size: .9rem; }
