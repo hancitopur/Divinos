@@ -110,6 +110,7 @@ function Shell() {
           <Route path="/racks" element={<Racks />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/intakes" element={<AdminIntakes />} />
+          <Route path="/shop" element={<ClientShop />} />
           <Route path="/sales-inventory" element={<AdminWineSales />} />
           <Route path="/admin/accounts" element={profile?.role === 'superadmin' ? <AdminAccounts /> : <Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
