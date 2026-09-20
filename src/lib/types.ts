@@ -1,8 +1,21 @@
-export type Role = 'admin' | 'staff'
+export type Role = 'superadmin' | 'admin' | 'member' | 'pending'
+export type MembershipPlan = 'digital' | 'reserva' | 'coleccion'
+export type MembershipStatus = 'pending' | 'approval_pending' | 'active' | 'suspended' | 'past_due' | 'cancelled' | 'expired'
 export type BottleStatus = 'in_storage' | 'sold' | 'consumed' | 'removed'
 export type WineType = 'red' | 'white' | 'rose' | 'sparkling' | 'dessert' | 'fortified' | 'other'
 
-export interface Profile { id: string; full_name: string | null; role: Role }
+export interface Profile { id: string; full_name: string | null; role: Role; terms_version?: string | null; terms_accepted_at?: string | null }
+
+export interface Membership {
+  user_id: string; client_id: string; plan: MembershipPlan; status: MembershipStatus
+  bottle_limit: number | null; payment_provider: 'paypal'; paypal_subscription_id: string | null
+  current_period_end: string | null; activated_at: string | null
+}
+
+export interface IntakeRequest {
+  id: string; client_id: string; submitted_by: string; status: 'draft' | 'submitted' | 'reviewing' | 'accepted' | 'rejected'
+  notes: string | null; submitted_at: string | null; created_at: string
+}
 
 export interface Client {
   id: string; name: string; email: string | null; phone: string | null; notes: string | null; active: boolean

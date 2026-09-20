@@ -24,11 +24,18 @@ export function Field({ label, children }: { label: string; children: ReactNode 
   return <div className="field"><label>{label}</label>{children}</div>
 }
 
-export function Thumb({ path, className = '' }: { path: string | null | undefined; className?: string }) {
-  const url = labelUrl(path, className.includes('lg') ? 1000 : 200)
+export function Thumb({ path, className = '', label = '' }: { path: string | null | undefined; className?: string; label?: string }) {
+  const [url, setUrl] = useState<string | null>(null)
+  useEffect(() => {
+    let active = true
+    labelUrl(path, className.includes('lg') ? 1000 : 200).then((next) => { if (active) setUrl(next) })
+    return () => { active = false }
+  }, [path, className])
   return url
     ? <img className={`thumb ${className}`} src={url} alt="" loading="lazy" />
-    : <div className={`thumb ${className}`}>🍷</div>
+    : label
+      ? <div className={`thumb wine-fallback tone-${[...label].reduce((a,c)=>a+c.charCodeAt(0),0)%5} ${className}`} role="img" aria-label={`Etiqueta ilustrada de ${label}`}><span><small>DIVINOS</small><b>{label}</b></span></div>
+      : <div className={`thumb ${className}`}>🍷</div>
 }
 
 /** Camera/upload button. Uploads immediately and calls onUploaded(path). */

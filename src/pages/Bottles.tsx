@@ -56,7 +56,7 @@ export function Bottles() {
         <div className="list">
           {list.map((b) => (
             <div className="item" key={b.id} onClick={() => setEditing(b)}>
-              <Thumb path={b.label_photo_path} />
+              <Thumb path={b.label_photo_path} label={`${b.wine_name} ${b.vintage ?? ''}`} />
               <div className="body">
                 <div className="title">{b.wine_name}{b.vintage ? ` ${b.vintage}` : ''}</div>
                 <div className="meta">{b.producer ? b.producer + ' · ' : ''}{b.client_name}</div>

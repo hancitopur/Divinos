@@ -9,11 +9,20 @@ services:
         sync: false
       - key: VITE_SUPABASE_ANON_KEY
         sync: false
-      - key: VITE_STRIPE_MEMBERSHIP_URL
-        sync: false
-      - key: VITE_STRIPE_RENTAL_URL
-        sync: false
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(self), microphone=(), geolocation=()
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self' https://www.paypal.com https://www.paypalobjects.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://images.openfoodfacts.org https://images.openfoodfacts.net https://upload.wikimedia.org https://www.paypalobjects.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://world.openfoodfacts.org https://world.openfoodfacts.net https://commons.wikimedia.org https://www.paypal.com; frame-src https://www.paypal.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://www.paypal.com; upgrade-insecure-requests"

@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 
-const membershipUrl = import.meta.env.VITE_STRIPE_MEMBERSHIP_URL as string | undefined
-const rentalUrl = import.meta.env.VITE_STRIPE_RENTAL_URL as string | undefined
-
 const features = [
   ['Registra', 'Fotografía la etiqueta y Divinos completa los datos disponibles.'],
   ['Organiza', 'Cada botella queda asignada a un rack y una posición exacta.'],
@@ -17,9 +14,8 @@ const storagePlans = [
   { name: 'Colección', capacity: 'Hasta 144 botellas', price: '79', note: '12 cajas almacenadas' },
 ]
 
-function PayLink({ href, children, secondary = false }: { href?: string; children: string; secondary?: boolean }) {
-  if (href) return <a className={`btn landing-btn ${secondary ? 'secondary' : ''}`} href={href}>{children}</a>
-  return <a className={`btn landing-btn ${secondary ? 'secondary' : ''}`} href="mailto:info@grafichee.com?subject=Quiero%20Divinos">{children}</a>
+function PayLink({ plan, children, secondary = false }: { plan: string; children: string; secondary?: boolean }) {
+  return <Link className={`btn landing-btn ${secondary ? 'secondary' : ''}`} to={`/login?plan=${plan}`}>{children}</Link>
 }
 
 function Jump({ to, className = '', children }: { to: string; className?: string; children: string }) {
@@ -81,12 +77,12 @@ export function Landing() {
                 <span className="plan-label">{plan.name}</span>
                 <strong><sup>$</sup>{plan.price}<small>/mes</small></strong>
                 <h3>{plan.capacity}</h3><p>{plan.note}</p>
-                <PayLink href={plan.name === 'Digital' ? membershipUrl : rentalUrl} secondary={plan.name !== 'Digital'}>{plan.name === 'Digital' ? 'Activar app' : 'Reservar'}</PayLink>
+                <PayLink plan={plan.name.toLowerCase()} secondary={plan.name !== 'Digital'}>{plan.name === 'Digital' ? 'Activar app' : 'Reservar'}</PayLink>
               </article>
             ))}
           </div>
           <div className="included-line"><span>Incluido con almacenamiento</span><b>Control de temperatura</b><b>Videovigilancia</b><b>Seguridad 24/7</b><b>Inventario en Divinos</b></div>
-          {!membershipUrl && <p className="payment-note">La solicitud está activa. El cobro en línea se habilitará al definir precios y conectar la cuenta de pagos.</p>}
+          <p className="payment-note">Pago recurrente protegido por PayPal. La cuenta se activa solamente cuando PayPal confirma la suscripción.</p>
         </section>
 
         <section className="landing-final">

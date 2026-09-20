@@ -1,15 +1,18 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase, configured } from '../lib/supabase'
 import { useT } from '../lib/i18n'
 import { Field } from '../components/ui'
 import { Brand } from '../components/Brand'
+import { TERMS_VERSION } from './Terms'
 
 export function Login() {
   const { t, lang, setLang } = useT()
-  const [mode, setMode] = useState<'in' | 'up'>('in')
+  const [params] = useSearchParams()
+  const [mode, setMode] = useState<'in' | 'up'>(() => params.get('plan') ? 'up' : 'in')
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [name, setName] = useState('')
   const [err, setErr] = useState<string | null>(null); const [msg, setMsg] = useState<string | null>(null); const [busy, setBusy] = useState(false)
+  const [accepted, setAccepted] = useState(false)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(null); setMsg(null); setBusy(true)
@@ -17,7 +20,12 @@ export function Login() {
       if (mode === 'in') {
         const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) throw error
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } })
+        if (!accepted) throw new Error('Debes aceptar los términos para crear la cuenta.')
+        const plan = params.get('plan')
+        const { data, error } = await supabase.auth.signUp({ email, password, options: {
+          data: { full_name: name, terms_accepted: true, terms_version: TERMS_VERSION },
+          emailRedirectTo: `${window.location.origin}/#/login${plan ? `?plan=${plan}` : ''}`,
+        } })
         if (error) throw error
         if (!data.session) setMsg(t('checkEmail'))
       }
@@ -31,13 +39,20 @@ export function Login() {
         {!configured && <div className="error">{t('notConfigured')}</div>}
         {mode === 'up' && <Field label={t('fullName')}><input value={name} onChange={(e) => setName(e.target.value)} required /></Field>}
         <Field label={t('email')}><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></Field>
-        <Field label={t('password')}><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} /></Field>
+        <Field label={t('password')}><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} /></Field>
+        {mode === 'up' && <label className="terms-check"><input type="checkbox" checked={accepted} onChange={(e)=>setAccepted(e.target.checked)} required /> Acepto los <Link to="/terms" target="_blank">términos del servicio</Link>.</label>}
         {err && <div className="error">{err}</div>}
         {msg && <div className="info">{msg}</div>}
         <button className="btn" disabled={busy || !configured}>{mode === 'in' ? t('signIn') : t('signUp')}</button>
         <button type="button" className="btn secondary" onClick={() => setMode(mode === 'in' ? 'up' : 'in')}>
           {mode === 'in' ? `${t('noAccount')} ${t('signUp')}` : `${t('haveAccount')} ${t('signIn')}`}
         </button>
+        {mode === 'in' && <button type="button" className="text-button" onClick={async()=>{
+          if (!email) { setErr('Escribe tu correo primero.'); return }
+          setBusy(true); setErr(null)
+          const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/#/reset-password` })
+          setBusy(false); if(error)setErr(error.message);else setMsg('Te enviamos un enlace para cambiar tu contraseña.')
+        }}>Olvidé mi contraseña</button>}
         <div className="auth-divider"><span>o</span></div>
         <Link className="btn demo-entry" to="/demo">Ver demo para ventas</Link>
         <Link className="small muted" style={{ textAlign: 'center' }} to="/">Volver a divinospr.com</Link>

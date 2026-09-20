@@ -200,7 +200,7 @@ function detectVarietal(value: string): string | undefined {
   return candidates.find(([pattern]) => pattern.test(value))?.[1]
 }
 
-export async function importWineImage(result: WineImageResult): Promise<string> {
+export async function importWineImage(result: WineImageResult, prefix = 'wines'): Promise<string> {
   const url = new URL(result.downloadUrl)
   const allowed = ['images.openfoodfacts.org', 'images.openfoodfacts.net', 'upload.wikimedia.org', 'thumb.wikimedia.org']
   if (url.protocol !== 'https:' || !allowed.includes(url.hostname)) throw new Error('Fuente de imagen no permitida')
@@ -212,5 +212,5 @@ export async function importWineImage(result: WineImageResult): Promise<string> 
   const blob = await response.blob()
   if (blob.size > 12 * 1024 * 1024) throw new Error('La imagen excede 12 MB')
   const file = new File([blob], 'wine-label.jpg', { type })
-  return uploadLabel(file, 'wines')
+  return uploadLabel(file, prefix)
 }

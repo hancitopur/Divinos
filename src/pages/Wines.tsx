@@ -37,7 +37,7 @@ export function Wines() {
         <div className="list">
           {list.map((w) => (
             <div className="item" key={w.id} onClick={() => setEditing(w)}>
-              <Thumb path={w.label_photo_path} />
+              <Thumb path={w.label_photo_path} label={`${w.name} ${w.vintage ?? ''}`} />
               <div className="body">
                 <div className="title">{w.name}{w.vintage ? ` ${w.vintage}` : ''}</div>
                 <div className="meta">{[w.producer, w.region, w.type ? t(`type_${w.type}` as any) : null].filter(Boolean).join(' · ')}</div>
