@@ -32,6 +32,10 @@ Deno.serve(async(req)=>{
     reservedId=order.id
     const {data:offer,error:offerError}=await admin.from('wine_sale_offers').select('description,wines(name,producer,vintage)').eq('id',offerId).single()
     if(offerError) throw offerError
+    if(String(offer.description||'').startsWith('[PAYPAL TEST]')){
+      const {data:profile}=await admin.from('profiles').select('role').eq('id',user.id).maybeSingle()
+      if(profile?.role!=='superadmin') throw new Error('Este producto está reservado para la prueba administrativa de PayPal.')
+    }
     const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines
     const site=Deno.env.get('PUBLIC_SITE_URL')||'https://divinos-iguw.onrender.com'
     const paypalResponse=await fetch(`${api}/v2/checkout/orders`,{

@@ -113,15 +113,15 @@ export function ClientShop() {
   const { session,membership,profile }=useAuth(); const { lang }=useT(); const [params]=useSearchParams()
   const [offers,setOffers]=useState<any[]|null>(null); const [busy,setBusy]=useState<string|null>(null)
   const [message,setMessage]=useState<{type:'ok'|'error';text:string;orderId?:string;collection?:boolean}|null>(null)
-  const load=()=>supabase.from('wine_sale_offers').select('*, wines(*)').eq('active',true).order('featured',{ascending:false}).order('member_release_at',{ascending:false}).then(({data})=>setOffers(data??[]))
-  useEffect(()=>{load()},[])
+  const load=()=>supabase.from('wine_sale_offers').select('*, wines(*)').eq('active',true).order('featured',{ascending:false}).order('member_release_at',{ascending:false}).then(({data})=>setOffers((data??[]).filter((offer:any)=>!String(offer.description||'').startsWith('[PAYPAL TEST]')||profile?.role==='superadmin')))
+  useEffect(()=>{load()},[profile?.role])
   useEffect(()=>{
     if(params.get('paypal')!=='return') return
     const token=new URLSearchParams(window.location.search).get('token'); if(!token)return
     setBusy('capture');setMessage(null)
     supabase.functions.invoke('paypal-capture-wine',{body:{paypalOrderId:token}}).then(({data,error})=>{
       if(error||data?.error)setMessage({type:'error',text:data?.error||error?.message||'No se pudo confirmar el pago.'})
-      else setMessage({type:'ok',text:data.pickup?'Compra confirmada. Te avisaremos cuando esté lista para recogido.':`Compra confirmada. ${data.bottles||1} botella(s) ubicada(s) en ${data.locations?.join(', ')||'tu cava'}.`,orderId:data.order_id,collection:!data.pickup})
+      else setMessage({type:'ok',text:`${data.pickup?'Compra confirmada. Te avisaremos cuando esté lista para recogido.':`Compra confirmada. ${data.bottles||1} botella(s) ubicada(s) en ${data.locations?.join(', ')||'tu cava'}.`}${data.email_sent?' Enviamos el recibo por correo mediante Resend.':''}`,orderId:data.order_id,collection:!data.pickup})
       setBusy(null);load()
     })
   },[])
@@ -156,18 +156,18 @@ export function ClientProductDetail() {
   if(loading)return <Loading/>
   if(!offer)return <div className="client-page product-missing"><h1>Producto no disponible</h1><p>{error||'La botella ya no está activa en la tienda.'}</p><Link className="btn" to="/shop">Volver a la tienda</Link></div>
   const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines,photo=storePhoto(wine?.name),left=offer.quantity_available-offer.quantity_reserved-offer.quantity_sold
-  const prices=storePrices(Number(offer.price)),total=activeMember?prices.member:prices.public,intent=params.get('buy')
+  const prices=storePrices(Number(offer.price)),total=activeMember?prices.member:prices.public,intent=params.get('buy'),paypalTest=String(offer.description||'').startsWith('[PAYPAL TEST]')&&profile?.role==='superadmin'
   const checkout=async(mode:'storage'|'pickup')=>{if(!session){window.location.hash=`#/login?next=${encodeURIComponent(`/shop/${offer.id}?buy=${mode}`)}`;return}setBusy(true);setError(null);const {data,error:e}=await supabase.functions.invoke('paypal-wine-order',{body:{offerId:offer.id,quantity:1,acceptAge:age,fulfillment:mode}});if(e||data?.error){setError(data?.error||e?.message||'No se pudo iniciar el pago.');setBusy(false)}else window.location.href=data.approval_url}
   return <div className="product-detail client-page">
     <Link className="product-back" to="/shop">← Volver a la tienda</Link>
     <section className="product-main">
       <div className="product-photo">{wine?.bottle_photo_path?<Thumb path={wine.bottle_photo_path} label={wine.name}/>:<img src={photo} alt={`Botella de ${wine?.name}`}/>}<button type="button" className="product-label-zoom" aria-label={`Ampliar etiqueta de ${wine?.name}`} onClick={()=>setZoom(true)}>{wine?.label_photo_path?<Thumb path={wine.label_photo_path} label={`Etiqueta de ${wine.name}`}/>:<img src={photo} alt={`Etiqueta de ${wine?.name}`}/>}<span>Ampliar</span></button></div>
-      <div className="product-buy"><span className="landing-kicker">{offer.offer_source==='member'?'Colección de miembro':'Selección Divinos'}</span><h1>{wine?.name}</h1><p className="product-origin">{[wine?.producer,wine?.region,wine?.country,wine?.vintage].filter(Boolean).join(' · ')}</p><p>{String(offer.description||'').replace(/^\[DEMO\]\s*/,'')}</p>
+      <div className="product-buy"><span className="landing-kicker">{offer.offer_source==='member'?'Colección de miembro':'Selección Divinos'}</span><h1>{wine?.name}</h1><p className="product-origin">{[wine?.producer,wine?.region,wine?.country,wine?.vintage].filter(Boolean).join(' · ')}</p><p>{String(offer.description||'').replace(/^\[(?:DEMO|PAYPAL TEST)\]\s*/,'')}</p>
         <div className="product-price"><strong>{money(total,lang)}</strong><span>{activeMember?'Precio de miembro aplicado':'Precio final'} · servicio incluido</span></div>
-        {session&&!staffPreview&&<label className="terms-check product-age"><input type="checkbox" checked={age} onChange={e=>setAge(e.target.checked)}/> Confirmo que tengo 18 años o más.</label>}
+        {session&&(!staffPreview||paypalTest)&&<label className="terms-check product-age"><input type="checkbox" checked={age} onChange={e=>setAge(e.target.checked)}/> Confirmo que tengo 18 años o más.</label>}
         {!session&&<div className="public-checkout-note"><b>Compra sin compromiso.</b><span>Puedes mirar sin cuenta. Al continuar conservamos esta botella y precio durante el registro.</span></div>}
         {session&&intent&&<div className="checkout-resume"><b>Tu selección sigue aquí.</b><span>Confirma tu edad y continúa a PayPal.</span></div>}
-        <div className="product-actions">{physical&&<button className="btn" disabled={!age||busy||left<1} onClick={()=>checkout('storage')}>{busy?'Conectando…':'Comprar y guardar'}</button>}<button className={physical?'btn secondary':'btn'} disabled={staffPreview||(!!session&&!age)||busy||left<1} onClick={()=>checkout('pickup')}>{staffPreview?'Vista previa':!session?'Comprar ahora':busy?'Conectando…':'Comprar para recoger'}</button></div>
+        <div className="product-actions">{physical&&!paypalTest&&<button className="btn" disabled={!age||busy||left<1} onClick={()=>checkout('storage')}>{busy?'Conectando…':'Comprar y guardar'}</button>}<button className={physical&&!paypalTest?'btn secondary':'btn'} disabled={(staffPreview&&!paypalTest)||(!!session&&!age)||busy||left<1} onClick={()=>checkout('pickup')}>{busy?'Conectando…':staffPreview&&!paypalTest?'Vista previa':paypalTest?'Probar PayPal por $1.00':!session?'Comprar ahora':'Comprar para recoger'}</button></div>
         {physical&&<div className="product-storage-note">✓ Al pagar, se añade a tu inventario y queda pendiente de ubicación.</div>}{error&&<div className="error">{error}</div>}<span className="badge">{left} disponible{left===1?'':'s'}</span>
       </div>
     </section>
