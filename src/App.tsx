@@ -11,6 +11,7 @@ import { Racks } from './pages/Racks'
 import { Clients } from './pages/Clients'
 import { Sales } from './pages/Sales'
 import { Admin } from './pages/Admin'
+import { ResetPassword } from './pages/ResetPassword'
 import { Loading } from './components/ui'
 
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
@@ -35,6 +36,8 @@ function Shell() {
     let dismissed = false; try { dismissed = localStorage.getItem('installHint') === '1' } catch {}
     setShowInstall(ios && !standalone && !dismissed)
   }, [])
+
+  if (window.location.pathname === '/reset-password') return <ResetPassword />
 
   if (loading) return <div className="auth"><Loading /></div>
   if (!session) return <Login />
