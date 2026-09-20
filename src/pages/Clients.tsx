@@ -33,7 +33,7 @@ export function Clients() {
                   <div className="meta">{[c.phone, c.email].filter(Boolean).join(' · ')}</div>
                 </div>
                 <div style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                  <Link to={`/bottles?client=${c.id}`} className="bold">{v?.bottles_in_storage ?? 0} botellas</Link>
+                  <Link to={`/bottles?client=${c.id}`} className="bold">{v?.bottles_in_storage ?? 0} 🍷</Link>
                   <div className="muted small">{money(v?.sale_value ?? 0, lang)}</div>
                 </div>
               </div>
@@ -41,7 +41,7 @@ export function Clients() {
           })}
         </div>
       )}
-      <button className="fab" aria-label={t('newClient')} onClick={() => setEditing({ active: true })}>+</button>
+      <button className="fab" onClick={() => setEditing({ active: true })}>+</button>
       {editing && <ClientForm client={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
     </div>
   )
