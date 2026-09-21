@@ -48,6 +48,8 @@ function Shell() {
   }, [])
 
   if (location.pathname === '/reset-password') return <ResetPassword />
+  if (location.pathname === '/site') return <Landing />
+  if (location.pathname === '/demo') return <Demo />
 
   if (loading) return <div className="auth"><Loading /></div>
   if (!session) return <Routes><Route path="/" element={<Landing/>}/><Route path="/demo" element={<Demo/>}/><Route path="/login" element={<Login/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>
