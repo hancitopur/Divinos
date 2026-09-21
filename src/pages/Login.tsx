@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase, configured } from '../lib/supabase'
 import { useT } from '../lib/i18n'
 import { Field } from '../components/ui'
 
 export function Login() {
+  const [params] = useSearchParams()
   const { t, lang, setLang } = useT()
-  const [mode, setMode] = useState<'in' | 'up' | 'forgot'>('in')
+  const [mode, setMode] = useState<'in' | 'up' | 'forgot'>(()=>params.get('signup')==='1'?'up':'in')
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [name, setName] = useState('')
   const [err, setErr] = useState<string | null>(null); const [msg, setMsg] = useState<string | null>(null); const [busy, setBusy] = useState(false)
 
@@ -29,7 +31,7 @@ export function Login() {
   return (
     <div className="auth">
       <form className="card stack" onSubmit={submit}>
-        <img className="logo" src="/icon.svg" alt="" />
+        <Link to="/"><img className="logo" src="/icon.svg" alt="" /></Link>
         <h1 style={{ textAlign: 'center' }}>{t('appName')}</h1>
         {!configured && <div className="error">{t('notConfigured')}</div>}
         {mode === 'forgot' && <div className="auth-intro"><h2>Recupera tu acceso</h2><p className="muted small">Escribe tu correo y recibirás un enlace para crear una contraseña nueva.</p></div>}
@@ -48,6 +50,7 @@ export function Login() {
             <option value="es">Español</option><option value="en">English</option>
           </select>
         </div>
+        <Link className="auth-link" to="/">← Volver a CigarrosPR</Link>
       </form>
     </div>
   )
