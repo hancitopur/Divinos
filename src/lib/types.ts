@@ -1,8 +1,11 @@
-export type Role = 'admin' | 'staff'
+export type Role = 'admin' | 'staff' | 'member' | 'pending'
+export type MembershipPlan = 'digital' | 'reserva' | 'coleccion'
+export type MembershipStatus = 'pending' | 'active' | 'suspended' | 'cancelled'
 export type BottleStatus = 'in_storage' | 'sold' | 'consumed' | 'removed'
 export type WineType = 'red' | 'white' | 'rose' | 'sparkling' | 'dessert' | 'fortified' | 'other'
 
 export interface Profile { id: string; full_name: string | null; role: Role }
+export interface Membership { user_id:string; client_id:string|null; plan:MembershipPlan; status:MembershipStatus; item_limit:number|null; monthly_price:number; created_at:string }
 
 export interface Client {
   id: string; name: string; email: string | null; phone: string | null; notes: string | null; active: boolean
