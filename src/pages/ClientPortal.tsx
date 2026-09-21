@@ -112,24 +112,23 @@ export function ClientAccount() {
 export function ClientShop() {
   const { session,membership,profile }=useAuth(); const { lang }=useT(); const [params]=useSearchParams()
   const [offers,setOffers]=useState<any[]|null>(null); const [busy,setBusy]=useState<string|null>(null)
+  const [pendingPayment,setPendingPayment]=useState<any|null>(null)
   const [message,setMessage]=useState<{type:'ok'|'error';text:string;orderId?:string;collection?:boolean}|null>(null)
   const load=()=>supabase.from('wine_sale_offers').select('*, wines(*)').eq('active',true).order('featured',{ascending:false}).order('member_release_at',{ascending:false}).then(({data})=>setOffers((data??[]).filter((offer:any)=>!String(offer.description||'').startsWith('[PAYPAL TEST]')||profile?.role==='superadmin')))
   useEffect(()=>{load()},[profile?.role])
+  const capturePayment=async(paypalOrderId:string)=>{setBusy('capture');setMessage(null);const {data,error}=await supabase.functions.invoke('paypal-capture-wine',{body:{paypalOrderId}});if(error||data?.error){let detail=data?.error||'';if(!detail&&(error as any)?.context){try{const payload=await (error as any).context.clone().json();detail=payload?.error||payload?.message||''}catch{}}setMessage({type:'error',text:detail||error?.message||'No se pudo confirmar el pago.'})}else{setPendingPayment(null);setMessage({type:'ok',text:`${data.pickup?'Compra confirmada. Te avisaremos cuando esté lista para recogido.':`Compra confirmada. ${data.bottles||1} botella(s) ubicada(s) en ${data.locations?.join(', ')||'tu cava'}.`}${data.email_sent?' Enviamos el recibo por correo mediante Resend.':''}`,orderId:data.order_id,collection:!data.pickup})}setBusy(null);load()}
+  useEffect(()=>{if(!session)return;supabase.from('wine_orders').select('id,paypal_order_id,total,created_at').eq('status','created').not('paypal_order_id','is',null).order('created_at',{ascending:false}).limit(1).maybeSingle().then(({data})=>setPendingPayment(data))},[session])
   useEffect(()=>{
     if(params.get('paypal')!=='return') return
     const token=new URLSearchParams(window.location.search).get('token'); if(!token)return
-    setBusy('capture');setMessage(null)
-    supabase.functions.invoke('paypal-capture-wine',{body:{paypalOrderId:token}}).then(({data,error})=>{
-      if(error||data?.error)setMessage({type:'error',text:data?.error||error?.message||'No se pudo confirmar el pago.'})
-      else setMessage({type:'ok',text:`${data.pickup?'Compra confirmada. Te avisaremos cuando esté lista para recogido.':`Compra confirmada. ${data.bottles||1} botella(s) ubicada(s) en ${data.locations?.join(', ')||'tu cava'}.`}${data.email_sent?' Enviamos el recibo por correo mediante Resend.':''}`,orderId:data.order_id,collection:!data.pickup})
-      setBusy(null);load()
-    })
+    void capturePayment(token)
   },[])
   const staffPreview=profile?.role==='admin'||profile?.role==='superadmin'
   const activeMember=membership?.status==='active'
   return <div className="stack client-page simple-shop">
     <div className="shop-simple-head"><span className="landing-kicker">Tienda Divinos</span><h1>Vinos seleccionados</h1><p>Compra para recoger o guardar directamente en tu cava.</p></div>
     {message&&<div className={message.type==='ok'?'order-confirmation':'error'}>{message.type==='ok'&&<span className="order-confirmation-check">✓</span>}<div><b>{message.type==='ok'?'Pago confirmado':'No se pudo confirmar'}</b><p>{message.text}</p>{message.orderId&&<small>Orden {message.orderId.slice(0,8).toUpperCase()}</small>}</div>{message.type==='ok'&&message.collection&&<Link className="btn sm" to="/collection">Ver en mi colección</Link>}</div>}
+    {pendingPayment&&!message&&<div className="order-confirmation pending-payment"><span>!</span><div><b>Pago pendiente de confirmar</b><p>PayPal devolvió una orden de {money(Number(pendingPayment.total),lang)}. Confírmala para cerrar el recibo y enviar el correo.</p></div><button className="btn sm" disabled={busy==='capture'} onClick={()=>capturePayment(pendingPayment.paypal_order_id)}>{busy==='capture'?'Confirmando…':'Confirmar pago'}</button></div>}
     <div className="shop-toolbar"><span>{staffPreview?'Vista administrativa':activeMember?'✓ Precio de miembro':session?'Recogido disponible':'Mira sin registrarte'}</span>{activeMember&&!staffPreview&&<Link to="/sell">Vender una botella</Link>}</div>
     {offers===null?<Loading/>:offers.length===0?<div className="client-success"><span>◌</span><h2>Próximamente</h2><p>Las nuevas llegadas aparecerán aquí primero para los miembros de Divinos.</p></div>:<div className="shop-grid">{offers.map((offer)=>{
       const wine=Array.isArray(offer.wines)?offer.wines[0]:offer.wines; const left=offer.quantity_available-offer.quantity_reserved-offer.quantity_sold
