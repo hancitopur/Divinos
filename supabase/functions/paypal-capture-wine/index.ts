@@ -28,9 +28,11 @@ Deno.serve(async(req)=>{
     if(!captureResponse.ok&&capture?.name!=='ORDER_ALREADY_CAPTURED')return json({error:capture?.details?.[0]?.description||'No se pudo confirmar el pago.'},502)
     const verified=capture?.name==='ORDER_ALREADY_CAPTURED'?await (await fetch(`${api}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`,{headers:{Authorization:`Bearer ${access_token}`}})).json():capture
     const unit=verified.purchase_units?.[0],payment=unit?.payments?.captures?.find((item:any)=>item.status==='COMPLETED')
-    if(verified.status!=='COMPLETED'||!payment||unit.custom_id!==order.id||Math.round(Number(payment.amount?.value)*100)!==Math.round(Number(order.total)*100)){
+    const referenceMatches=unit?.custom_id===order.id||unit?.reference_id===order.id||unit?.invoice_id===`DIV-${order.id}`
+    const amountMatches=Math.round(Number(payment?.amount?.value)*100)===Math.round(Number(order.total)*100)&&payment?.amount?.currency_code===order.currency
+    if(verified.status!=='COMPLETED'||!payment||!referenceMatches||!amountMatches){
       await admin.from('wine_orders').update({status:'manual_review'}).eq('id',order.id)
-      return json({error:'El pago requiere revisión antes de entregar la botella.'},409)
+      return json({error:'El pago requiere revisión antes de entregar la botella.',verification:{order_status:verified.status||null,payment_status:payment?.status||null,reference_matches:referenceMatches,amount_matches:amountMatches}},409)
     }
     const {data:placed,error:completeError}=await admin.rpc('complete_wine_order',{p_order_id:order.id,p_paypal_order_id:paypalOrderId,p_capture_id:payment.id}).single()
     if(completeError)return json({error:completeError.message},409)
